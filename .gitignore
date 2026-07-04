@@ -27,6 +27,12 @@ unity/**/*.csproj
 unity/**/*.sln
 unity/**/*.user
 
+# Binarios compilados de los ejemplos (p. ej. examples/csharp_bridge/bridge.exe):
+# se compilan on-demand desde el .cs, no se versionan.
+examples/**/*.exe
+examples/**/*.dll
+examples/**/*.pdb
+
 # Editor / OS
 .vscode/
 .idea/

@@ -2,14 +2,17 @@
 
 Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity desde la terminal: bridge Unity↔código, algoritmos, mapas, hiperparámetros, evaluación y visualización, todo con comandos simples y componentes intercambiables.
 
-El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
+El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md). La
+especificación del protocolo para escribir bridges en cualquier lenguaje está en
+[PROTOCOL.md](PROTOCOL.md).
 
-> **Estado actual**: Fases 1-9 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
+> **Estado actual**: Fases 1-10 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
 > verificado contra Unity real, configuración jerárquica, `urc train` de extremo a extremo (PPO o
 > SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`), algoritmos de
 > terceros vía `./plugins/`, entornos declarados en config con currículo/domain randomization
-> reales, `urc eval/compare/record` para evaluar checkpoints, y TensorBoard/wandb + `urc visualize`
-> con barra de progreso en vivo. Siguiente: Fase 10 (extensibilidad multi-lenguaje real).
+> reales, `urc eval/compare/record` para evaluar checkpoints, TensorBoard/wandb + `urc visualize`
+> con barra de progreso en vivo, y un protocolo out-of-process documentado y verificado contra un
+> bridge de referencia en C# de verdad. Siguiente: Fase 11 (calidad, empaquetado y publicación).
 
 ## Instalación (desarrollo)
 
@@ -70,6 +73,16 @@ urc record runs/default/checkpoint_50000_steps.zip --episodes 3   # trayectoria 
 urc visualize                           # TensorBoard sobre runs/ (o la carpeta que le pases)
 urc train --set training.progress_bar=true   # barra de progreso en vivo en la terminal
 urc train --set logging.backend=wandb --set logging.project=mi-proyecto   # Weights&Biases
+```
+
+¿Quieres un bridge en otro lenguaje (no Python)? [PROTOCOL.md](PROTOCOL.md) especifica el
+protocolo completo (líneas JSON por stdio o socket) y [`examples/csharp_bridge/`](examples/csharp_bridge)
+trae una implementación de referencia real en C#, verificada contra `urc train` de verdad:
+
+```yaml
+bridge: external
+bridge_options:
+  command: ["ruta/a/tu-bridge.exe"]
 ```
 
 `urc eval`/`urc record` no necesitan que repitas `--project`/`--set`: `urc train` deja un

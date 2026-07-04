@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 9)
+> **Última actualización**: 2026-07-04 (Fase 10)
 
 ---
 
@@ -158,6 +158,7 @@ Nombre de comando propuesto: `urc` (**U**nity **R**L **C**ontroller) — `[DECIS
 ```
 unity-rl-controller/
 ├── ROADMAP.md                 (este documento)
+├── PROTOCOL.md                 (especificación del protocolo out-of-process, Fase 10)
 ├── pyproject.toml
 ├── src/urc/
 │   ├── cli/                   comandos (uno por subcomando) + _shared.py (opciones/carga común)
@@ -180,7 +181,8 @@ unity-rl-controller/
 │   │   └── curriculum.py      (CurriculumCallback para SB3)
 │   └── config/                loader + schema + resolución jerárquica
 ├── unity/                     proyecto(s) de Unity con las escenas/mapas
-├── examples/                  proyectos de ejemplo end-to-end
+├── examples/
+│   └── csharp_bridge/         bridge de referencia en C# (Fase 10, ver PROTOCOL.md)
 ├── docs/                      documentación pública (mkdocs)
 └── tests/
 ```
@@ -493,10 +495,37 @@ mecanismos ya integrados en el propio bucle de entrenamiento de SB3 (`tensorboar
 específica de SB3, no algo agnóstico de algoritmo que mereciera su propio paquete. Se ha eliminado
 la carpeta `logging/` vacía que quedó de la Fase 1.
 
-### Fase 10 — Extensibilidad multi-lenguaje real
-- [ ] Especificación formal (protobuf/JSON schema) del protocolo out-of-process
-- [ ] Implementación de referencia de un plugin en otro lenguaje (ej. stub en C#) para validar el contrato cross-language
-- [ ] Documentación "cómo escribir tu propio plugin en el lenguaje que quieras"
+### Fase 10 — Extensibilidad multi-lenguaje real ✅
+- [x] Especificación formal del protocolo out-of-process: [`PROTOCOL.md`](PROTOCOL.md). No se hizo
+      en protobuf/JSON schema formal como decía el borrador original — es Markdown con tablas y
+      ejemplos. Motivo: el protocolo (líneas JSON, `method`/`params`/`result`/`error`) es lo
+      bastante simple como para que un JSON Schema formal añadiera ceremonia sin aportar claridad
+      extra frente a una tabla + ejemplos, que además sirve directamente como guía de uso (ver
+      siguiente punto) en el mismo documento.
+- [x] Implementación de referencia en otro lenguaje: **C# real, no un stub**
+      ([`examples/csharp_bridge/Program.cs`](examples/csharp_bridge/Program.cs)) — compilado con
+      `csc.exe` (el compilador que ya trae .NET Framework en Windows, sin instalar el SDK de
+      .NET) y verificado de extremo a extremo contra un `ExternalProcessBridge` real, incluyendo
+      **entrenar un PPO completo usando el ejecutable de C# como entorno** (checkpoints y logs de
+      TensorBoard reales generados a partir de ahí). Alcance: solo bridges — los algoritmos
+      siguen siendo plugins de Python (aclarado explícitamente en `PROTOCOL.md`, para que no se
+      lea como "puedes escribir tu algoritmo de entrenamiento en C#", que no es cierto).
+- [x] Documentación "cómo escribir tu propio plugin": integrada en `PROTOCOL.md` (sección 6,
+      checklist) en vez de en un documento aparte — spec y guía de uso son la misma audiencia
+      leyendo en el mismo momento, separarlas solo habría fragmentado la información.
+
+**Test automatizado real, no solo un ejemplo documentado**: `tests/test_csharp_reference_bridge.py`
+compila `Program.cs` con `csc.exe` y lo conecta con un `ExternalProcessBridge` de verdad en cada
+ejecución — no es un mock de "cómo se comportaría C#", es C# de verdad compilado y ejecutado. Se
+salta limpiamente (`pytest.mark.skipif`) si no hay `csc.exe` disponible, p. ej. en el runner Linux
+de CI, igual que ya hacíamos con `mlagents_envs`/`stable_baselines3` cuando no están instalados.
+
+**Bug de documentación evitado**: al escribir el checklist de `PROTOCOL.md` estuve a punto de decir
+que un bridge propio funciona con `urc env launch` "igual que con ML-Agents" — falso: `urc env
+launch` está *hardcodeado* a `MLAgentsBridge`, no resuelve el bridge desde el registry como sí
+hacen `urc train`/`urc eval`/`urc record`. Corregido antes de dejarlo escrito; es una limitación
+real que queda anotada, no algo que arreglar en esta fase (`env launch` nació en la Fase 3 pensado
+solo para el smoke test contra Unity, no como comando genérico).
 
 ### Fase 11 — Calidad, empaquetado y publicación
 - [ ] Cobertura de tests (unitarios + integración con builds headless en CI)
