@@ -1,0 +1,51 @@
+name: Unity integration
+
+# Prueba MLAgentsBridge contra un build headless real de Unity (escena Basic
+# de ML-Agents), descargado de un Release de este repo en vez de compilarse
+# dentro de CI — ver ROADMAP.md, Fase 11, para el porqué de este enfoque
+# (evita vendorizar ml-agents y necesitar una licencia de Unity en CI).
+
+on:
+  # Solo manual por ahora: en cuanto exista el Release con el build headless
+  # (ver ROADMAP.md, Fase 11), cambia esto a "push:"/"pull_request:" como en
+  # ci.yml — así no sale en rojo en cada commit mientras tanto.
+  workflow_dispatch:
+
+env:
+  # Cambia esto si subes el build a otro tag/nombre de asset.
+  UNITY_BUILD_RELEASE_TAG: unity-basic-linux-v1
+  UNITY_BUILD_ASSET_NAME: basic-linux-headless.zip
+
+jobs:
+  unity-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package (dev + mlagents)
+        run: pip install -e ".[dev,mlagents]"
+
+      - name: Download headless Unity build from GitHub Release
+        run: |
+          curl -fL -o build.zip \
+            "https://github.com/${{ github.repository }}/releases/download/${{ env.UNITY_BUILD_RELEASE_TAG }}/${{ env.UNITY_BUILD_ASSET_NAME }}"
+          mkdir -p unity_build
+          unzip -q build.zip -d unity_build
+          # El build se exportó en Windows: el bit de ejecución no sobrevive al
+          # zip, hay que ponerlo a mano.
+          find unity_build -maxdepth 1 -type f -name "*.x86_64" -exec chmod +x {} \;
+
+      - name: Run real Unity smoke test (reset/step against the headless build)
+        run: |
+          BUILD_PATH=$(find unity_build -maxdepth 1 -type f -name "*.x86_64" | head -n1)
+          echo "Usando build: $BUILD_PATH"
+          echo "URC_UNITY_BUILD_PATH=$BUILD_PATH" >> "$GITHUB_ENV"
+
+      - name: Run pytest against the real build
+        env:
+          URC_UNITY_BUILD_PATH: ${{ env.URC_UNITY_BUILD_PATH }}
+        run: pytest tests/test_unity_headless_integration.py -v
