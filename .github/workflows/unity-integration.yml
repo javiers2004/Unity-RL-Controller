@@ -41,6 +41,17 @@ jobs:
           # zip mete todo dentro de una carpeta contenedora.
           find unity_build -type f -name "*.x86_64" -exec chmod +x {} \;
 
+      - name: Set up virtual display (Xvfb)
+        run: |
+          # El player de Unity en Linux, incluso en modo -batchmode/-nographics,
+          # puede necesitar conectar a un servidor X real para inicializarse sin
+          # crashear (SIGSEGV) en runners sin GPU/X real como ubuntu-latest.
+          # Xvfb da un display virtual que basta para eso.
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb
+          Xvfb :99 -screen 0 1024x768x24 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
       - name: Run pytest against the real build
         run: |
           BUILD_PATH=$(find unity_build -type f -name "*.x86_64" | head -n1)
