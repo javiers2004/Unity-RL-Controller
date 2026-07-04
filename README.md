@@ -4,7 +4,7 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
 
-> **Estado actual**: Fase 1 (esqueleto del repositorio) completada. Siguiente: Fase 2 (contratos y sistema de plugins). Todavía no hay bridge a Unity ni entrenamiento funcional.
+> **Estado actual**: Fases 1 y 2 completadas (esqueleto del repo + contratos y sistema de plugins). Siguiente: Fase 3 (bridge por defecto con Unity ML-Agents). Todavía no hay conexión con Unity ni entrenamiento funcional.
 
 ## Instalación (desarrollo)
 

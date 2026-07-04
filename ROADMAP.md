@@ -82,11 +82,23 @@ Y el propósito del proyecto es **doble**: debe ser cómodo de usar día a día 
 
 Cada caja con "Registry" es un punto de extensión: acepta implementaciones in-process (Python) u out-of-process (cualquier lenguaje) siempre que cumplan el contrato correspondiente.
 
-### 4.1 Contratos mínimos (a definir en Fase 2)
+### 4.1 Contratos mínimos ✅ (implementados en Fase 2, `src/urc/core/contracts.py`)
 
-- `BridgeAdapter`: `reset()`, `step(actions)`, `observation_spec()`, `action_spec()`, `close()`.
-- `AlgorithmBackend`: `train(bridge, env_spec, config) -> Policy`, `load(checkpoint)`, `predict(obs)`.
+- `BridgeAdapter`: `reset()`, `step(action)`, `observation_spec()`, `action_spec()`, `close()`.
+- `AlgorithmBackend`: `train(bridge, env_spec, config) -> Policy`, `load(checkpoint) -> Policy`.
+- `Policy`: `predict(observation) -> action`. *(Refinado respecto al borrador inicial: `predict`
+  vive en `Policy`, no en `AlgorithmBackend`, para poder tener varias políticas/checkpoints
+  cargados a la vez — necesario para `urc compare` en la Fase 8 — sin que compartan estado.)*
 - `EnvironmentSpec`: metadatos declarativos (no lógica) — nombre, ruta al build, specs de obs/acción, parámetros configurables, curriculum opcional.
+
+El registro de componentes (`src/urc/core/registry.py`) expone `bridges`, `algorithms` y
+`environments`, cada uno resoluble por nombre string (`registry.get("nombre")` /
+`registry.create("nombre", ...)`). Los plugins in-process se cargan vía entry points
+(`urc.bridges`, `urc.algorithms`, `urc.environments`) o desde una carpeta local
+(`urc.core.plugins.load_plugins_from_dir`). Los plugins out-of-process (para escribirlos en
+cualquier lenguaje) hablan un protocolo JSON-RPC por stdio (`urc.core.rpc.StdioRpcClient`),
+implementado de referencia en `ExternalProcessBridge` (`src/urc/bridges/external_bridge.py`,
+registrado como `"external"`) y validado con un subproceso real en los tests.
 
 ---
 
@@ -189,12 +201,14 @@ unity-rl-controller/
 - [x] CI básico (lint + tests en cada push)
 - [x] README corto que enlaza a este ROADMAP
 
-### Fase 2 — Contratos y sistema de plugins
-- [ ] Clases base abstractas: `BridgeAdapter`, `AlgorithmBackend`, `EnvironmentSpec`
-- [ ] `Registry` genérico (registrar por nombre string, resolver desde config)
-- [ ] Soporte de plugins in-process (Python, vía `entry_points` o carpeta de plugins)
-- [ ] Soporte de plugins out-of-process (protocolo JSON-RPC sobre stdio o gRPC) — este es el mecanismo que habilita "cualquier otro lenguaje"
-- [ ] Implementación *fake/no-op* de cada contrato + tests unitarios sobre los contratos
+### Fase 2 — Contratos y sistema de plugins ✅
+- [x] Clases base abstractas: `BridgeAdapter`, `Policy`, `AlgorithmBackend`, `EnvironmentSpec`
+- [x] `Registry` genérico (registrar por nombre string, resolver desde config)
+- [x] Soporte de plugins in-process (Python, vía `entry_points` o carpeta de plugins)
+- [x] Soporte de plugins out-of-process: protocolo JSON-RPC sobre stdio (decisión tomada, ver
+      sección 10) + `ExternalProcessBridge` como implementación de referencia
+- [x] Implementación *fake/no-op* de cada contrato + tests unitarios sobre los contratos
+      (15 tests, incluido un round-trip real contra un subproceso)
 
 ### Fase 3 — Bridge por defecto: Unity ML-Agents
 - [ ] Wrapper de `mlagents_envs.UnityEnvironment` implementando `BridgeAdapter`
@@ -268,7 +282,7 @@ unity-rl-controller/
 
 - `[DECISIÓN PENDIENTE]` Nombre final del proyecto/comando CLI.
 - `[DECISIÓN PENDIENTE]` Licencia open-source.
-- `[DECISIÓN PENDIENTE]` Protocolo exacto para plugins out-of-process: JSON-RPC sobre stdio (más simple) vs gRPC (más rápido, más pesado de implementar en cualquier lenguaje).
+- ~~`[DECISIÓN PENDIENTE]` Protocolo exacto para plugins out-of-process~~ → **Decidido en Fase 2**: JSON-RPC sobre stdio (líneas de JSON por stdin/stdout). Motivo: cualquier lenguaje sabe leer/escribir JSON por stdio sin dependencias extra, frente a gRPC que exige toolchain de protobuf en cada lenguaje. Sigue siendo "solo una implementación más" del contrato `BridgeAdapter`/`AlgorithmBackend` — si en el futuro hace falta más rendimiento, se puede añadir un adapter gRPC alternativo sin tocar el core. La especificación formal del protocolo (JSON schema) queda para la Fase 10.
 - `[DECISIÓN PENDIENTE]` Soporte multiplataforma desde el día 1 o empezar solo Windows (entorno actual del usuario) y generalizar después.
 
 ---
