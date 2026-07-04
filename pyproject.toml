@@ -21,6 +21,14 @@ dev = [
     "ruff>=0.6",
     "pre-commit>=3.7",
 ]
+mlagents = [
+    # mlagents-envs 0.28.0 (la última publicada en PyPI) trae bindings de
+    # protobuf generados con una versión antigua: con protobuf>=3.21 falla al
+    # importar ("Descriptors cannot be created directly"). Se fija <3.21 hasta
+    # que el proyecto publique bindings regenerados.
+    "mlagents-envs==0.28.0",
+    "protobuf<3.21",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/urc"]
@@ -31,6 +39,15 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+# B008: Typer requiere `= typer.Option(...)` / `= typer.Argument(...)` como
+# valor por defecto de los parámetros de los comandos; es el patrón oficial,
+# no un bug.
+ignore = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+    # mlagents-envs 0.28.0 usa una API de protobuf ya deprecada (ver pin de
+    # protobuf<3.21 más arriba); no es un problema de nuestro código.
+    "ignore::DeprecationWarning:mlagents_envs.*",
+]

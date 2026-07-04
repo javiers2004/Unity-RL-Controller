@@ -210,12 +210,34 @@ unity-rl-controller/
 - [x] Implementación *fake/no-op* de cada contrato + tests unitarios sobre los contratos
       (15 tests, incluido un round-trip real contra un subproceso)
 
-### Fase 3 — Bridge por defecto: Unity ML-Agents
-- [ ] Wrapper de `mlagents_envs.UnityEnvironment` implementando `BridgeAdapter`
-- [ ] Soporte modo headless + múltiples instancias en paralelo
-- [ ] Modo "editor" para debug interactivo (conectar contra el editor abierto de Unity)
-- [ ] `urc env launch` para lanzar/verificar conexión a un build
-- [ ] Segundo bridge mínimo de ejemplo (socket simple) para validar que el contrato realmente es intercambiable de extremo a extremo
+### Fase 3 — Bridge por defecto: Unity ML-Agents ✅ (código) / ⏳ (verificación con Unity real)
+- [x] Wrapper de `mlagents_envs.UnityEnvironment` implementando `BridgeAdapter`
+      (`src/urc/bridges/mlagents_bridge.py`, registrado como `"mlagents"`)
+- [x] Soporte modo headless (`no_graphics=True`) + múltiples instancias en paralelo
+      (`worker_id`/`base_port`) — expuesto tal cual de `UnityEnvironment`
+- [x] Modo "editor" para debug interactivo: `file_name=None` conecta contra el editor
+      abierto en vez de lanzar un build
+- [x] `urc env launch` (`--executable`, `--no-graphics`, `--worker-id`, `--seed`, `--timeout`)
+      para lanzar/verificar conexión — **pendiente de probar contra Unity real**, ver nota abajo
+- [x] Segundo bridge mínimo de ejemplo: `SocketBridge` (TCP, `src/urc/bridges/socket_bridge.py`),
+      además del `ExternalProcessBridge` de la Fase 2 — ambos comparten protocolo
+      (`JsonLineRpcClient`/`JsonLineBridge` en `core/rpc.py`), demostrando que el contrato es
+      intercambiable con distintos transportes (stdio, socket, y el gRPC interno de ML-Agents)
+
+**Limitación conocida y deliberada de `MLAgentsBridge`**: solo soporta un behavior con un único
+agente activo y un único sensor de observación (el caso de los entornos de ejemplo simples de
+ML-Agents, como Basic o GridWorld). Si el entorno tiene más de un agente/behavior/sensor activo,
+lanza `NotImplementedError` con un mensaje explícito en vez de comportarse de forma incorrecta en
+silencio. Multi-agente queda para cuando el contrato lo necesite explícitamente.
+
+**Gotcha real encontrado**: `mlagents-envs` 0.28.0 (la última en PyPI) trae bindings de protobuf
+generados con una versión antigua; con `protobuf>=3.21` falla al importar. Se fija
+`protobuf<3.21` en el extra `mlagents` de `pyproject.toml`.
+
+**Pendiente de verificación real** (requiere Unity instalado, ver nota más abajo): todo lo de
+esta fase está probado con un `UnityEnvironment` falso en los tests (`test_mlagents_bridge.py`),
+pero `urc env launch` todavía no se ha ejecutado contra un Unity de verdad. Es el primer paso a
+hacer en cuanto el usuario tenga Unity + un entorno de ejemplo de ML-Agents disponibles.
 
 ### Fase 4 — Sistema de configuración
 - [ ] Loader de YAML jerárquico (defaults → proyecto → experimento → CLI)
