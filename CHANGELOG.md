@@ -12,7 +12,13 @@ publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).
 - Paquete verificado con `python -m build` + `twine check` + instalación en un venv limpio.
 - Sitio de documentación pública (mkdocs).
 - Ejemplos end-to-end: entorno de juguete autocontenido (sin Unity), bridge en C#, y Unity real.
-- CI ampliado con un build headless real de Unity descargado desde un Release de GitHub.
+- CI ampliado con un build headless real de Unity descargado desde un Release de GitHub —
+  verificado en `ubuntu-latest` (`1 passed`), tras arreglar un SIGSEGV al inicializar el player
+  (faltaba un servidor X; solucionado con `Xvfb`) y un `UnityPlayer.so` ausente del build subido.
+- Fix: `_resolve_executable_path` en `core/rpc.py` — rutas relativas con separador fallaban al
+  lanzar subprocesos en instalaciones de Python de Microsoft Store en Windows.
+- Fix: `MLAgentsBridge.step()` devolvía `reward` como `np.float32` en vez de `float`, incumpliendo
+  el contrato de `StepResult`.
 
 ### Fase 10 — Extensibilidad multi-lenguaje real
 - `PROTOCOL.md`: especificación completa del protocolo out-of-process (bridges en cualquier
