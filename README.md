@@ -9,9 +9,9 @@ Hay 3 proyectos de ejemplo completos en [`examples/`](examples/) (sin Unity, con
 y con Unity real) y un sitio de documentación navegable en `docs/` (`mkdocs serve` para verlo en
 local; `mkdocs.yml` ya tiene el workflow de GitHub Pages listo).
 
-> **Estado actual**: Fases 1-10 completadas, Fase 11 en curso (empaquetado/docs/ejemplos ya
-> hechos y verificados; falta solo que el CI tenga un build headless real de Unity, que necesita
-> un paso manual del usuario — ver el ROADMAP). Resto del recorrido: esqueleto, contratos/plugins,
+> **Estado actual**: Fases 1-11 completadas (empaquetado, sitio de documentación, 3 ejemplos
+> end-to-end y CI con un build headless real de Unity, todo verificado — ver el ROADMAP). Resto
+> del recorrido: esqueleto, contratos/plugins,
 > bridge de ML-Agents verificado contra Unity real, configuración jerárquica, `urc train` de
 > extremo a extremo (PPO o SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y
 > `--resume`), algoritmos de terceros vía `./plugins/`, entornos declarados en config con

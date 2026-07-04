@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 11, en curso — falta el build headless de Unity para CI)
+> **Última actualización**: 2026-07-04 (Fase 11 completada)
 
 ---
 
@@ -528,10 +528,12 @@ hacen `urc train`/`urc eval`/`urc record`. Corregido antes de dejarlo escrito; e
 real que queda anotada, no algo que arreglar en esta fase (`env launch` nació en la Fase 3 pensado
 solo para el smoke test contra Unity, no como comando genérico).
 
-### Fase 11 — Calidad, empaquetado y publicación
-- [ ] Cobertura de tests (unitarios + integración con builds headless en CI) — **en curso**, ver
-      nota abajo: la parte de Unity headless en CI necesita un paso manual del usuario (exportar
-      un build) que todavía no se ha completado en esta sesión.
+### Fase 11 — Calidad, empaquetado y publicación ✅
+- [x] Cobertura de tests (unitarios + integración con builds headless en CI) — el workflow
+      `unity-integration.yml` descarga un build headless real (Linux, escena Basic de ML-Agents)
+      de un GitHub Release y ejecuta `tests/test_unity_headless_integration.py` contra él de
+      verdad. **`1 passed`** en CI — ver nota abajo para el proceso de depuración real que hizo
+      falta para llegar ahí.
 - [x] Sitio de documentación pública (mkdocs, tema Material): `mkdocs.yml` +
       `docs/{index,quickstart,cli-reference,examples}.md` + 3 tutoriales
       (`docs/tutorials/{write-a-bridge,write-an-algorithm,curriculum}.md`). `ROADMAP.md`/
@@ -565,15 +567,45 @@ resuelvan por `PATH` como siempre. Sin este fix, `bridge_options.command` con ru
 habría fallado de forma intermitente según la instalación de Python de cada usuario.
 
 **Sobre "CI con builds headless de Unity"**: se investigó el enfoque "montarlo dentro de GitHub
-Actions" (game-ci) y se descartó por ahora — el proyecto de ejemplo de ML-Agents referencia
+Actions" (game-ci) y se descartó — el proyecto de ejemplo de ML-Agents referencia
 `com.unity.ml-agents` con una ruta relativa (`file:../../com.unity.ml-agents`), así que haría falta
 vendorizar buena parte de ese monorepo en el nuestro, más una licencia de Unity como secreto de
 GitHub, más riesgo de que la imagen Docker de la versión exacta de Unity no esté disponible. Se
-decidió en su lugar: el usuario exporta un build headless de Linux una vez desde su propio Editor
+optó en su lugar por: el usuario exporta un build headless de Linux una vez desde su propio Editor
 (Unity soporta cross-compilar a Linux sin salir de Windows, solo añadiendo el módulo "Linux Build
-Support" en Unity Hub), lo sube como asset de un GitHub Release, y el CI simplemente lo descarga y
-ejecuta un smoke test real contra él. Sin licencias de Unity en GitHub Actions, sin vendorizar
-ml-agents. Pendiente de completar: el usuario tiene que hacer el build + subir el Release.
+Support" en Unity Hub), lo sube como asset de un GitHub Release (`unity-basic-linux-v1`), y el CI
+simplemente lo descarga y ejecuta un smoke test real contra él. Sin licencias de Unity en GitHub
+Actions, sin vendorizar ml-agents. **Completado y verificado: `1 passed` en `ubuntu-latest`.**
+
+Tres problemas reales aparecieron montando esto, todos arreglados de raíz (no con parches):
+1. **Workflow que fallaba en silencio**: si el `.x86_64` no se encontraba dentro del zip
+   descomprimido, el test se saltaba (`skipped`) en vez de fallar, y el job seguía saliendo en
+   verde — una señal de CI falsa y peligrosa. Arreglado buscando el ejecutable recursivamente
+   (el zip metía el build dentro de una carpeta contenedora) y con `exit 1` explícito si no
+   aparece ninguno.
+2. **`UnityPlayer.so` que faltaba en el build subido**: el ejecutable arrancaba y moría con
+   "return code 127" / `error while loading shared libraries: UnityPlayer.so: cannot open shared
+   object file`. Unity coloca ese `.so` junto al `.x86_64` en un build Linux, aparte de la carpeta
+   `_Data/`; se quedó fuera del zip subido al Release la primera vez. Arreglado re-empaquetando el
+   build con `UnityPlayer.so` incluido.
+3. **SIGSEGV al hacer `reset()`**: con el `.so` ya presente, el motor inicializaba del todo
+   (versión, físicas, `NullGfxDevice`, comunicador de ML-Agents registrado) pero el proceso moría
+   con signal 11 justo después, durante el primer intercambio del comunicador. Causa: en
+   `ubuntu-latest` no hay ningún servidor X, y el player de Unity en Linux necesita poder conectar
+   a uno (aunque sea virtual) para terminar de inicializarse sin crashear, incluso en modo
+   `-nographics`/`-batchmode`. Arreglado añadiendo un paso que instala `xvfb`, levanta un display
+   virtual (`Xvfb :99 -screen 0 1024x768x24 &`) y exporta `DISPLAY=:99` antes de lanzar el test.
+
+Un cuarto problema, ya no de infraestructura sino de contrato: una vez el test llegaba a `step()`,
+fallaba con `assert False` porque `StepResult.reward` está declarado como `float` pero
+`MLAgentsBridge.step()` pasaba el `np.float32` de `mlagents_envs` sin convertir — no se notaba con
+los bridges de prueba (mocks con floats nativos) ni con `toy_reach_target`/`csharp_bridge` (no usan
+`MLAgentsBridge`), solo saltó al ejecutar contra Unity real por primera vez. Arreglado casteando a
+`float(...)` en `mlagents_bridge.py`.
+
+Con esto verificado un par de veces seguidas, `unity-integration.yml` pasó de `workflow_dispatch`
+únicamente a disparo automático en `push`/`pull_request` (restringido por `paths:` a los archivos
+que de verdad afectan al bridge de ML-Agents, para no descargar el build de ~28 MB en cada push).
 
 ### Fase 12 — Pulido final y comunidad
 - [ ] README con demos/GIFs y badges

@@ -6,8 +6,21 @@ name: Unity integration
 # (evita vendorizar ml-agents y necesitar una licencia de Unity en CI).
 
 on:
-  # Solo manual por ahora: en cuanto esto corra bien un par de veces seguidas,
-  # cambia esto a "push:"/"pull_request:" como en ci.yml.
+  # Verificado contra un build real (ver ROADMAP.md, Fase 11). Restringido por
+  # rutas para no descargar el build (~28 MB) en cada push que no lo necesita.
+  push:
+    branches: [master]
+    paths:
+      - "src/urc/bridges/mlagents_bridge.py"
+      - "src/urc/core/contracts.py"
+      - "tests/test_unity_headless_integration.py"
+      - ".github/workflows/unity-integration.yml"
+  pull_request:
+    paths:
+      - "src/urc/bridges/mlagents_bridge.py"
+      - "src/urc/core/contracts.py"
+      - "tests/test_unity_headless_integration.py"
+      - ".github/workflows/unity-integration.yml"
   workflow_dispatch:
 
 env:
