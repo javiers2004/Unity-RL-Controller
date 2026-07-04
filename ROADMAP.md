@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 11 completada)
+> **Última actualización**: 2026-07-04 (Fase 12 completada — todas las fases planificadas hechas)
 
 ---
 
@@ -607,10 +607,22 @@ Con esto verificado un par de veces seguidas, `unity-integration.yml` pasó de `
 únicamente a disparo automático en `push`/`pull_request` (restringido por `paths:` a los archivos
 que de verdad afectan al bridge de ML-Agents, para no descargar el build de ~28 MB en cada push).
 
-### Fase 12 — Pulido final y comunidad
-- [ ] README con demos/GIFs y badges
-- [ ] `CONTRIBUTING.md` + código de conducta
-- [ ] Recoger feedback de uso real y priorizar iteración siguiente
+### Fase 12 — Pulido final y comunidad ✅
+- [x] README con demo y badges: badges reales de CI/Unity integration/Docs (generados por los
+      workflows existentes, no estáticos), licencia y versión de Python. Sección "Demo" con una
+      transcripción de terminal real (`urc train` + `urc eval` contra `toy_reach_target`,
+      re-ejecutada y verificada, no inventada). **No incluye un GIF visual del agente entrenando
+      en Unity** — eso es una grabación de pantalla, no algo generable desde aquí; queda
+      documentado como aportación abierta en `CONTRIBUTING.md`.
+- [x] `CONTRIBUTING.md`: cómo configurar el entorno, qué ejecutar antes de un PR, dónde encaja cada
+      tipo de cambio (bridge/algoritmo/ejemplo/documentación), estilo de commits, y cómo aportar
+      una demo visual. `CODE_OF_CONDUCT.md`: adaptación traducida del Contributor Covenant v2.1,
+      con reporte vía Security Advisory privado del repo (se evita publicar un email personal).
+- [~] Recoger feedback de uso real y priorizar iteración siguiente — **no es una tarea que se
+      pueda completar de una vez**, es un proceso continuo que empieza cuando haya usuarios reales
+      (p. ej. tras publicar a PyPI). El mecanismo ya está listo: GitHub Issues + `CONTRIBUTING.md`
+      explicando cómo reportar y dónde encaja cada propuesta; queda como trabajo permanente, no
+      como checkbox cerrable.
 
 ---
 

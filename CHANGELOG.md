@@ -7,6 +7,14 @@ publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).
 
 ## [Unreleased]
 
+### Fase 12 — Pulido final y comunidad
+- README: badges reales (CI, Unity integration, Docs, licencia, versión de Python) y una sección
+  "Demo" con una transcripción de terminal real y verificada (`urc train`/`urc eval` contra
+  `toy_reach_target`).
+- `CONTRIBUTING.md`: entorno de desarrollo, checks antes de un PR, dónde encaja cada tipo de
+  cambio, y cómo aportar una demo visual (grabación de pantalla, fuera del alcance de este repo).
+- `CODE_OF_CONDUCT.md`: adaptación del Contributor Covenant v2.1.
+
 ### Fase 11 — Calidad, empaquetado y publicación
 - `LICENSE` (MIT) y metadata de empaquetado completa (clasificadores, URLs del proyecto).
 - Paquete verificado con `python -m build` + `twine check` + instalación en un venv limpio.

@@ -1,17 +1,49 @@
 # Unity-RL-Controller (`urc`)
 
+[![CI](https://github.com/javiers2004/Unity-RL-Controller/actions/workflows/ci.yml/badge.svg)](https://github.com/javiers2004/Unity-RL-Controller/actions/workflows/ci.yml)
+[![Unity integration](https://github.com/javiers2004/Unity-RL-Controller/actions/workflows/unity-integration.yml/badge.svg)](https://github.com/javiers2004/Unity-RL-Controller/actions/workflows/unity-integration.yml)
+[![Docs](https://github.com/javiers2004/Unity-RL-Controller/actions/workflows/docs.yml/badge.svg)](https://javiers2004.github.io/Unity-RL-Controller/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+
 Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity desde la terminal: bridge Unity↔código, algoritmos, mapas, hiperparámetros, evaluación y visualización, todo con comandos simples y componentes intercambiables.
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md). La
 especificación del protocolo para escribir bridges en cualquier lenguaje está en
 [PROTOCOL.md](PROTOCOL.md). El historial de cambios por fase está en [CHANGELOG.md](CHANGELOG.md).
 Hay 3 proyectos de ejemplo completos en [`examples/`](examples/) (sin Unity, con un bridge en C#,
-y con Unity real) y un sitio de documentación navegable en `docs/` (`mkdocs serve` para verlo en
-local; `mkdocs.yml` ya tiene el workflow de GitHub Pages listo).
+y con Unity real) y un sitio de documentación navegable en
+[javiers2004.github.io/Unity-RL-Controller](https://javiers2004.github.io/Unity-RL-Controller/)
+(o `mkdocs serve` para verlo en local). ¿Quieres contribuir? Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
-> **Estado actual**: Fases 1-11 completadas (empaquetado, sitio de documentación, 3 ejemplos
-> end-to-end y CI con un build headless real de Unity, todo verificado — ver el ROADMAP). Resto
-> del recorrido: esqueleto, contratos/plugins,
+## Demo
+
+Entrenamiento de extremo a extremo sin necesitar Unity instalado — entorno de juguete 1D, PPO,
+[`examples/toy_reach_target/`](examples/toy_reach_target) (transcripción real, sin editar):
+
+```console
+$ urc train
+Bridge: socket  Algoritmo: sb3-ppo  Entorno: default
+Checkpoints en: runs\default
+Entrenamiento terminado.
+
+$ urc eval runs/default/checkpoint_20000_steps.zip --episodes 30
+Episodios:        30
+Reward medio:     7.153 ± 0.009
+Duración media:   8.0 pasos
+Tasa de éxito:    100.0%
+Resultados guardados en: runs\default\eval_checkpoint_20000_steps.json
+```
+
+El mismo flujo funciona igual contra Unity real cambiando solo la config (`bridge: mlagents` en
+vez de `bridge: socket`) — ver [`examples/unity_basic_ppo/`](examples/unity_basic_ppo). No hay
+todavía un GIF del agente entrenando dentro del editor de Unity: es una grabación de pantalla, no
+algo que se pueda generar aquí — si quieres aportar una, ver
+["Grabar una demo visual"](CONTRIBUTING.md#grabar-una-demo-visual) en CONTRIBUTING.md.
+
+> **Estado actual**: Fases 1-12 completadas (empaquetado, sitio de documentación, 3 ejemplos
+> end-to-end, CI con un build headless real de Unity, y guías de contribución/código de conducta,
+> todo verificado — ver el ROADMAP). Resto del recorrido: esqueleto, contratos/plugins,
 > bridge de ML-Agents verificado contra Unity real, configuración jerárquica, `urc train` de
 > extremo a extremo (PPO o SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y
 > `--resume`), algoritmos de terceros vía `./plugins/`, entornos declarados en config con
@@ -147,3 +179,10 @@ El paquete está listo para publicarse (metadata completa, `twine check` en verd
 instalando el wheel en un venv limpio), pero **no se ha publicado a PyPI todavía** — es una
 decisión deliberada: publicar de verdad necesita una cuenta/API key de PyPI que solo el
 mantenedor debe usar (`python -m twine upload dist/*` cuando decidas hacerlo).
+
+## Contribuir
+
+Los issues y pull requests son bienvenidos — ver [CONTRIBUTING.md](CONTRIBUTING.md) para cómo
+configurar el entorno, qué ejecutar antes de abrir un PR, y dónde encaja cada tipo de cambio
+(bridge, algoritmo, ejemplo, documentación). Este proyecto sigue un
+[Código de Conducta](CODE_OF_CONDUCT.md).
