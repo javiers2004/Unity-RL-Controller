@@ -64,10 +64,10 @@ class MLAgentsBridge(BridgeAdapter):
         decision_steps, terminal_steps = self._env.get_steps(behavior_name)
         if len(terminal_steps) == 1:
             step = next(iter(terminal_steps.values()))
-            return StepResult(observation=step.obs[0], reward=step.reward, done=True)
+            return StepResult(observation=step.obs[0], reward=float(step.reward), done=True)
         if len(decision_steps) == 1:
             step = next(iter(decision_steps.values()))
-            return StepResult(observation=step.obs[0], reward=step.reward, done=False)
+            return StepResult(observation=step.obs[0], reward=float(step.reward), done=False)
 
         raise NotImplementedError(
             "MLAgentsBridge solo soporta un agente activo a la vez; se encontraron "
