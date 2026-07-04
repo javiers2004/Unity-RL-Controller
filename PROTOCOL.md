@@ -6,7 +6,7 @@
 >
 > **Alcance**: esto es solo para **bridges** (la conexión con el entorno de simulación). Los
 > **algoritmos** (`AlgorithmBackend`) siguen siendo plugins de Python — ver la sección
-> "Plugins de Python" del [ROADMAP](ROADMAP.md) (Fases 2 y 6). No hay (todavía) un protocolo
+> "Plugins de Python" del [ROADMAP](https://github.com/javiers2004/Unity-RL-Controller/blob/master/ROADMAP.md) (Fases 2 y 6). No hay (todavía) un protocolo
 > out-of-process para algoritmos.
 
 ---
@@ -103,7 +103,7 @@ numérica válida de JSON sirve.
 
 ## 5. Implementación de referencia: C#
 
-[`examples/csharp_bridge/Program.cs`](examples/csharp_bridge/Program.cs) es un bridge completo en
+[`examples/csharp_bridge/Program.cs`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/csharp_bridge/Program.cs) es un bridge completo en
 C#, sin ninguna dependencia de `urc` ni de Python — solo usa `JavaScriptSerializer`
 (`System.Web.Extensions`, incluido en .NET Framework, sin necesitar NuGet). Implementa un entorno
 de juguete (episodios de 3 pasos, recompensa fija) para poder probarlo sin nada más.
@@ -138,7 +138,7 @@ disponible, p. ej. en un runner Linux) — no es solo un ejemplo documentado, es
 interoperabilidad real y automatizada.
 
 Para un ejemplo más simple (menos código, pero en Python) mirando exactamente el mismo protocolo,
-[`tests/fixtures/echo_bridge.py`](tests/fixtures/echo_bridge.py) hace lo mismo en ~30 líneas.
+[`tests/fixtures/echo_bridge.py`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/tests/fixtures/echo_bridge.py) hace lo mismo en ~30 líneas.
 
 ## 6. Checklist para escribir tu propio bridge
 

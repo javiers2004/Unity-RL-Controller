@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import subprocess
 from collections.abc import Callable
@@ -12,6 +13,27 @@ from urc.core.jsonutil import json_safe
 
 class RpcError(RuntimeError):
     """El extremo remoto devolvió un error o no respondió el protocolo esperado."""
+
+
+def _resolve_executable_path(command: list[str]) -> list[str]:
+    """Convierte una ruta relativa en `command[0]` a absoluta antes de lanzarla.
+
+    En algunas instalaciones de Python en Windows (p. ej. la de Microsoft
+    Store), `subprocess.Popen` con una ruta relativa que contiene separadores
+    de carpeta falla con `FileNotFoundError` aunque el archivo exista de
+    verdad — `CreateProcess` no la resuelve contra el directorio de trabajo
+    igual que las APIs de archivo normales de Python. Los nombres sueltos sin
+    separador (p. ej. "python", "node") se dejan tal cual: deben resolverse
+    por `PATH`, no por el directorio de trabajo.
+    """
+    if not command:
+        return command
+
+    executable = command[0]
+    has_separator = "/" in executable or os.sep in executable
+    if has_separator and not os.path.isabs(executable):
+        return [os.path.abspath(executable), *command[1:]]
+    return command
 
 
 class JsonLineRpcClient:
@@ -30,7 +52,7 @@ class JsonLineRpcClient:
     @classmethod
     def over_subprocess(cls, command: list[str]) -> JsonLineRpcClient:
         process = subprocess.Popen(
-            command,
+            _resolve_executable_path(command),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,

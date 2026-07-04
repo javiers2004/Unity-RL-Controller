@@ -4,15 +4,19 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md). La
 especificación del protocolo para escribir bridges en cualquier lenguaje está en
-[PROTOCOL.md](PROTOCOL.md).
+[PROTOCOL.md](PROTOCOL.md). El historial de cambios por fase está en [CHANGELOG.md](CHANGELOG.md).
+Hay 3 proyectos de ejemplo completos en [`examples/`](examples/) (sin Unity, con un bridge en C#,
+y con Unity real) y un sitio de documentación navegable en `docs/` (`mkdocs serve` para verlo en
+local; `mkdocs.yml` ya tiene el workflow de GitHub Pages listo).
 
-> **Estado actual**: Fases 1-10 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
-> verificado contra Unity real, configuración jerárquica, `urc train` de extremo a extremo (PPO o
-> SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`), algoritmos de
-> terceros vía `./plugins/`, entornos declarados en config con currículo/domain randomization
-> reales, `urc eval/compare/record` para evaluar checkpoints, TensorBoard/wandb + `urc visualize`
-> con barra de progreso en vivo, y un protocolo out-of-process documentado y verificado contra un
-> bridge de referencia en C# de verdad. Siguiente: Fase 11 (calidad, empaquetado y publicación).
+> **Estado actual**: Fases 1-10 completadas, Fase 11 en curso (empaquetado/docs/ejemplos ya
+> hechos y verificados; falta solo que el CI tenga un build headless real de Unity, que necesita
+> un paso manual del usuario — ver el ROADMAP). Resto del recorrido: esqueleto, contratos/plugins,
+> bridge de ML-Agents verificado contra Unity real, configuración jerárquica, `urc train` de
+> extremo a extremo (PPO o SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y
+> `--resume`), algoritmos de terceros vía `./plugins/`, entornos declarados en config con
+> currículo/domain randomization reales, `urc eval/compare/record`, TensorBoard/wandb +
+> `urc visualize`, y un protocolo out-of-process verificado contra un bridge de referencia en C#.
 
 ## Instalación (desarrollo)
 
@@ -125,4 +129,21 @@ environments:
 ruff check .        # lint
 pytest               # tests
 pre-commit install   # activa los hooks de pre-commit
+
+pip install -e ".[docs]"
+mkdocs serve         # sitio de documentación en local, con recarga en caliente
+mkdocs build --strict   # falla si hay enlaces rotos — así se verifica antes de cada release
 ```
+
+## Empaquetado
+
+```bash
+python -m pip install build twine
+python -m build              # genera dist/*.whl y dist/*.tar.gz
+python -m twine check dist/*  # valida la metadata para PyPI sin subir nada
+```
+
+El paquete está listo para publicarse (metadata completa, `twine check` en verde, probado
+instalando el wheel en un venv limpio), pero **no se ha publicado a PyPI todavía** — es una
+decisión deliberada: publicar de verdad necesita una cuenta/API key de PyPI que solo el
+mantenedor debe usar (`python -m twine upload dist/*` cuando decidas hacerlo).

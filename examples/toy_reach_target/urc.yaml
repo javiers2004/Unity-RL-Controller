@@ -1,0 +1,11 @@
+bridge: socket
+bridge_options:
+  host: 127.0.0.1
+  port: 9000
+algo: sb3-ppo
+hyperparameters:
+  learning_rate: 3.0e-4
+training:
+  max_steps: 20000
+  checkpoint_every: 20000
+output_dir: runs

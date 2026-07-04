@@ -1,0 +1,52 @@
+site_name: Unity RL Controller (urc)
+site_description: Controla entrenamientos de Reinforcement Learning en Unity desde la terminal.
+repo_url: https://github.com/javiers2004/Unity-RL-Controller
+repo_name: javiers2004/Unity-RL-Controller
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - Inicio: index.md
+  - Guía rápida: quickstart.md
+  - Referencia de comandos: cli-reference.md
+  - Ejemplos: examples.md
+  - Tutoriales:
+      - Escribir un bridge en otro lenguaje: tutorials/write-a-bridge.md
+      - Escribir un algoritmo propio: tutorials/write-an-algorithm.md
+      - Currículo y domain randomization: tutorials/curriculum.md
+  - Diseño y roadmap: roadmap.md
+  - Protocolo out-of-process: protocol.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - tables
+  - toc:
+      permalink: true

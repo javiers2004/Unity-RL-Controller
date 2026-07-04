@@ -1,0 +1,7 @@
+bridge: mlagents
+bridge_options: {}   # {} = conectar al editor abierto; añade file_name para un build headless
+algo: sb3-ppo        # Basic tiene acciones discretas: PPO vale, SAC no (ver Fase 6 del ROADMAP)
+training:
+  max_steps: 50000
+  checkpoint_every: 10000
+output_dir: runs

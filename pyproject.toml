@@ -8,11 +8,40 @@ version = "0.1.0"
 description = "Unity RL Controller — controla entrenamientos de Reinforcement Learning en Unity desde la terminal."
 readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "javiers2004" }]
+keywords = [
+    "unity",
+    "reinforcement-learning",
+    "ml-agents",
+    "stable-baselines3",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Simulation",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "typer>=0.12",
     "pydantic>=2.0",
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/javiers2004/Unity-RL-Controller"
+Roadmap = "https://github.com/javiers2004/Unity-RL-Controller/blob/master/ROADMAP.md"
+Protocol = "https://github.com/javiers2004/Unity-RL-Controller/blob/master/PROTOCOL.md"
+Changelog = "https://github.com/javiers2004/Unity-RL-Controller/blob/master/CHANGELOG.md"
+Issues = "https://github.com/javiers2004/Unity-RL-Controller/issues"
 
 [project.scripts]
 urc = "urc.cli.main:main"
@@ -40,6 +69,10 @@ sb3 = [
 ]
 wandb = [
     "wandb>=0.16",
+]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
 ]
 all = [
     "urc[mlagents,sb3,wandb]",

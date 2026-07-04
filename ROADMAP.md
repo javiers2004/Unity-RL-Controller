@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 10)
+> **Última actualización**: 2026-07-04 (Fase 11, en curso — falta el build headless de Unity para CI)
 
 ---
 
@@ -496,14 +496,15 @@ específica de SB3, no algo agnóstico de algoritmo que mereciera su propio paqu
 la carpeta `logging/` vacía que quedó de la Fase 1.
 
 ### Fase 10 — Extensibilidad multi-lenguaje real ✅
-- [x] Especificación formal del protocolo out-of-process: [`PROTOCOL.md`](PROTOCOL.md). No se hizo
+- [x] Especificación formal del protocolo out-of-process:
+      [`PROTOCOL.md`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/PROTOCOL.md). No se hizo
       en protobuf/JSON schema formal como decía el borrador original — es Markdown con tablas y
       ejemplos. Motivo: el protocolo (líneas JSON, `method`/`params`/`result`/`error`) es lo
       bastante simple como para que un JSON Schema formal añadiera ceremonia sin aportar claridad
       extra frente a una tabla + ejemplos, que además sirve directamente como guía de uso (ver
       siguiente punto) en el mismo documento.
 - [x] Implementación de referencia en otro lenguaje: **C# real, no un stub**
-      ([`examples/csharp_bridge/Program.cs`](examples/csharp_bridge/Program.cs)) — compilado con
+      ([`examples/csharp_bridge/Program.cs`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/csharp_bridge/Program.cs)) — compilado con
       `csc.exe` (el compilador que ya trae .NET Framework en Windows, sin instalar el SDK de
       .NET) y verificado de extremo a extremo contra un `ExternalProcessBridge` real, incluyendo
       **entrenar un PPO completo usando el ejecutable de C# como entorno** (checkpoints y logs de
@@ -528,10 +529,51 @@ real que queda anotada, no algo que arreglar en esta fase (`env launch` nació e
 solo para el smoke test contra Unity, no como comando genérico).
 
 ### Fase 11 — Calidad, empaquetado y publicación
-- [ ] Cobertura de tests (unitarios + integración con builds headless en CI)
-- [ ] Sitio de documentación pública (mkdocs) con quickstart y tutoriales
-- [ ] Publicación en PyPI, versionado semántico, `CHANGELOG.md`
-- [ ] 2-3 ejemplos end-to-end (mapas distintos, algoritmos distintos)
+- [ ] Cobertura de tests (unitarios + integración con builds headless en CI) — **en curso**, ver
+      nota abajo: la parte de Unity headless en CI necesita un paso manual del usuario (exportar
+      un build) que todavía no se ha completado en esta sesión.
+- [x] Sitio de documentación pública (mkdocs, tema Material): `mkdocs.yml` +
+      `docs/{index,quickstart,cli-reference,examples}.md` + 3 tutoriales
+      (`docs/tutorials/{write-a-bridge,write-an-algorithm,curriculum}.md`). `ROADMAP.md`/
+      `PROTOCOL.md`/`CHANGELOG.md` se transcluyen tal cual (`pymdownx.snippets`) en vez de
+      duplicarse — una sola fuente de verdad. Verificado con `mkdocs build --strict` sin avisos.
+      Workflow `.github/workflows/docs.yml` listo para publicar a GitHub Pages en cada push a
+      `docs/`/`mkdocs.yml`; falta que el usuario active Pages en la configuración del repo (GitHub
+      Settings → Pages → Source: rama `gh-pages`) — no lo puedo hacer yo.
+- [x] Versionado semántico + `CHANGELOG.md` (formato Keep a Changelog, una sección por fase).
+      Empaquetado verificado de verdad: `LICENSE` (MIT), metadata completa de `pyproject.toml`
+      (clasificadores, URLs), `python -m build` + `twine check` en verde, e instalación del wheel
+      resultante en un venv limpio con `urc version`/`urc config show` funcionando. **No publicado
+      a PyPI** — decisión explícita del usuario: dejar el paquete listo, publicar el "de verdad"
+      es un paso suyo (necesita su propia cuenta/API key de PyPI).
+- [x] 3 ejemplos end-to-end en `examples/`, cubriendo bridges/algoritmos/mapas distintos:
+  - `toy_reach_target/`: entorno de juguete autocontenido (socket TCP, sin Unity), PPO —
+    **verificado aprendiendo la tarea de verdad** (100% de éxito, 8 pasos por episodio, el óptimo).
+  - `csharp_bridge/`: el bridge de referencia en C# de la Fase 10, ahora con `urc.yaml` propio,
+    entrenando con **SAC** (acciones continuas) — verificado end-to-end.
+  - `unity_basic_ppo/`: Unity ML-Agents real (escena Basic), PPO (acciones discretas) — preparado
+    con `urc.yaml`/README, pendiente de que el usuario lo confirme manualmente cuando pueda (no
+    hay Unity en esta sesión de trabajo).
+
+**Bug real encontrado montando el ejemplo de C#**: `subprocess.Popen` con una ruta relativa que
+contiene separadores de carpeta fallaba con `FileNotFoundError` en esta instalación de Python de
+Microsoft Store, aunque el archivo existiera de verdad (`CreateProcess` no la resuelve contra el
+directorio de trabajo igual que las APIs de archivo normales de Python). Arreglado de raíz en
+`urc.core.rpc._resolve_executable_path`: convierte a absoluta cualquier ruta con separador antes
+de lanzar el subproceso, dejando los nombres sueltos (`"python"`, `"node"`) intactos para que se
+resuelvan por `PATH` como siempre. Sin este fix, `bridge_options.command` con rutas relativas
+habría fallado de forma intermitente según la instalación de Python de cada usuario.
+
+**Sobre "CI con builds headless de Unity"**: se investigó el enfoque "montarlo dentro de GitHub
+Actions" (game-ci) y se descartó por ahora — el proyecto de ejemplo de ML-Agents referencia
+`com.unity.ml-agents` con una ruta relativa (`file:../../com.unity.ml-agents`), así que haría falta
+vendorizar buena parte de ese monorepo en el nuestro, más una licencia de Unity como secreto de
+GitHub, más riesgo de que la imagen Docker de la versión exacta de Unity no esté disponible. Se
+decidió en su lugar: el usuario exporta un build headless de Linux una vez desde su propio Editor
+(Unity soporta cross-compilar a Linux sin salir de Windows, solo añadiendo el módulo "Linux Build
+Support" en Unity Hub), lo sube como asset de un GitHub Release, y el CI simplemente lo descarga y
+ejecuta un smoke test real contra él. Sin licencias de Unity en GitHub Actions, sin vendorizar
+ml-agents. Pendiente de completar: el usuario tiene que hacer el build + subir el Release.
 
 ### Fase 12 — Pulido final y comunidad
 - [ ] README con demos/GIFs y badges

@@ -1,0 +1,12 @@
+bridge: external
+bridge_options:
+  # Ruta relativa al directorio desde el que ejecutes `urc` (normalmente la
+  # raíz del repo). Si prefieres una ruta absoluta, también funciona.
+  command: ["./examples/csharp_bridge/bridge.exe"]
+algo: sb3-sac
+hyperparameters:
+  learning_starts: 100
+training:
+  max_steps: 2000
+  checkpoint_every: 2000
+output_dir: runs

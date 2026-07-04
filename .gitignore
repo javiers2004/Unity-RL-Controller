@@ -10,6 +10,9 @@ venv/
 build/
 dist/
 
+# mkdocs (sitio generado, se construye desde docs/ + mkdocs.yml)
+site/
+
 # Runs / experimentos (se generan al entrenar, no se versionan)
 runs/
 experiments/*.log
