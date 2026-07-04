@@ -553,9 +553,12 @@ solo para el smoke test contra Unity, no como comando genérico).
     **verificado aprendiendo la tarea de verdad** (100% de éxito, 8 pasos por episodio, el óptimo).
   - `csharp_bridge/`: el bridge de referencia en C# de la Fase 10, ahora con `urc.yaml` propio,
     entrenando con **SAC** (acciones continuas) — verificado end-to-end.
-  - `unity_basic_ppo/`: Unity ML-Agents real (escena Basic), PPO (acciones discretas) — preparado
-    con `urc.yaml`/README, pendiente de que el usuario lo confirme manualmente cuando pueda (no
-    hay Unity en esta sesión de trabajo).
+  - `unity_basic_ppo/`: Unity ML-Agents real (escena Basic), PPO (acciones discretas) —
+    **verificado end-to-end contra el editor de Unity de verdad** (2026-07-04): `urc train`
+    conectado al editor en Play (puerto 5004), 50.000 pasos, duración media de episodio bajando de
+    19.9 a 7.0 pasos y recompensa media subiendo de 0.67 a 0.93 a lo largo del entrenamiento;
+    `urc eval --episodes 20` sobre el checkpoint final confirmó **0.930 ± 0.000 de recompensa
+    media, 7.0 pasos de duración** — convergencia real y consistente, no ruido.
 
 **Bug real encontrado montando el ejemplo de C#**: `subprocess.Popen` con una ruta relativa que
 contiene separadores de carpeta fallaba con `FileNotFoundError` en esta instalación de Python de
