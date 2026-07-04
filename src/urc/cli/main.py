@@ -3,6 +3,7 @@ import sys
 import typer
 
 from urc import __version__
+from urc.cli.algo import algo_app
 from urc.cli.config import config_app
 from urc.cli.doctor import doctor as doctor_command
 from urc.cli.env import env_app
@@ -28,6 +29,7 @@ app = typer.Typer(
 
 app.add_typer(env_app, name="env")
 app.add_typer(config_app, name="config")
+app.add_typer(algo_app, name="algo")
 app.command("train")(train_command)
 app.command("doctor")(doctor_command)
 app.command("init")(init_command)

@@ -6,3 +6,6 @@ from urc.core.registry import algorithms
 algorithms.register_lazy(
     "sb3-ppo", "urc.algorithms.sb3_ppo", install_hint='pip install "urc[sb3]"'
 )
+algorithms.register_lazy(
+    "sb3-sac", "urc.algorithms.sb3_sac", install_hint='pip install "urc[sb3]"'
+)

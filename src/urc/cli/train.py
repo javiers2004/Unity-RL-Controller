@@ -8,6 +8,7 @@ from urc.algorithms import algorithms as algorithm_registry
 from urc.bridges import bridges as bridge_registry
 from urc.config import ConfigError, overrides_to_dict, resolve_config
 from urc.core.contracts import EnvironmentSpec
+from urc.core.plugins import load_all_plugins
 
 _PROJECT_OPTION = typer.Option(
     Path("urc.yaml"), "--project", help="Ruta al YAML de configuración del proyecto."
@@ -43,6 +44,8 @@ def train(
     except ConfigError as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=1) from error
+
+    load_all_plugins()
 
     try:
         bridge_cls = bridge_registry.get(config.bridge)

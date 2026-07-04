@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 5)
+> **Última actualización**: 2026-07-04 (Fase 6)
 
 ---
 
@@ -169,7 +169,9 @@ unity-rl-controller/
 │   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
 │   │   └── socket_bridge.py   (protocolo out-of-process, TCP)
 │   ├── algorithms/
-│   │   ├── sb3_ppo.py         (default: PPO de SB3 vía BridgeGymEnv)
+│   │   ├── sb3_base.py        (SB3Backend: mecánica común a los backends de SB3)
+│   │   ├── sb3_ppo.py         (default: PPO, admite acciones discretas y continuas)
+│   │   ├── sb3_sac.py         (alternativa: SAC, solo acciones continuas)
 │   │   └── gym_bridge.py      (BridgeAdapter -> entorno Gymnasium)
 │   ├── envs/                  EnvironmentSpecs registrados + builds de Unity
 │   ├── config/                loader + schema + resolución jerárquica
@@ -328,18 +330,32 @@ de juguete (bridge `socket`), con hiperparámetros minúsculos para que corra en
 checkpoints guardados correctamente en disco, y `--resume` continuando el contador de timesteps
 sin reiniciarlo. Automatizado como test en `tests/test_cli_train.py`.
 
-### Fase 6 — Algoritmos intercambiables
-> Actualizado tras el pivote de la Fase 5: `sb3-ppo` ya es el backend por defecto (no el
-> "segundo"). Lo que falta aquí es un **segundo backend genuinamente distinto** y el mecanismo
-> para que cualquiera añada el suyo.
-- [ ] Segundo backend real y distinto de PPO/SB3 (candidatos: SAC de SB3 para acciones continuas,
-      o un adapter que invoque `mlagents-learn` como proceso externo para quien quiera
-      self-play/currículo nativos de ML-Agents — decidir cuál al llegar aquí)
-- [ ] Mecanismo para que el usuario registre su propio algoritmo (plugin in-process u out-of-process)
-- [ ] `urc algo list / info`
-- [x] ~~Gestión de hiperparámetros vía `--set clave=valor`~~ ya cubierto desde la Fase 4/5
-      (`--set hyperparameters.learning_rate=...`); pendiente solo lo de "archivos de
-      hiperparámetros reutilizables" si hace falta más que YAMLs de experimento sueltos
+### Fase 6 — Algoritmos intercambiables ✅
+- [x] Segundo backend real y distinto: **SAC de Stable-Baselines3** (`sb3-sac`). Comparte mecánica
+      de entrenar/reanudar/checkpoint con `sb3-ppo` vía una base común (`algorithms/sb3_base.py`,
+      `SB3Backend`) — solo cambia la clase de algoritmo de SB3. SAC no admite acciones discretas
+      (limitación real del algoritmo): se comprueba explícitamente y se rechaza con un mensaje
+      claro (`_check_action_space`) en vez de dejar que falle dentro de SB3. El candidato
+      "invocar `mlagents-learn` como proceso externo" sigue disponible para más adelante si hace
+      falta self-play/currículo nativos de ML-Agents — no se ha hecho ahora por complejidad y
+      riesgo de dependencias frente al beneficio (ver Fase 5 sobre el pivote a SB3).
+- [x] Mecanismo para que el usuario registre su propio algoritmo: **ya existía desde la Fase 2**
+      (`load_plugins_from_dir`/`load_entry_point_plugins`) pero **nunca se llamaba desde el
+      CLI** — hueco real cerrado en esta fase con `load_all_plugins()`, invocado al principio de
+      `urc train` y `urc algo list/info`. Antes de esta fase, un plugin de terceros no tenía
+      ninguna forma de llegar a registrarse en una sesión real de `urc`.
+- [x] `urc algo list / info` (`src/urc/cli/algo.py`) — `list` no importa nada (no fuerza
+      dependencias opcionales solo por listar nombres), `info` sí, al pedir la descripción real.
+- [x] ~~Gestión de hiperparámetros vía `--set clave=valor`~~ ya cubierto desde la Fase 4/5.
+
+**Bug real encontrado escribiendo el test del plugin custom**: `load_plugins_from_dir` re-ejecutaba
+el archivo entero cada vez que se llamaba, sin comprobar si ya estaba cargado. Como `urc train` y
+`urc algo list` llaman ambos a `load_all_plugins()`, invocarlos dos veces en el mismo proceso (tal
+cual pasa en los tests, y pasaría en cualquier sesión que combine varios comandos) intentaba
+re-registrar el mismo nombre dos veces → `ValueError`. Arreglado haciéndolo idempotente por ruta
+absoluta (`_plugin_module_name`, hash de la ruta resuelta): si el archivo ya se cargó en este
+proceso, no se vuelve a importar. De paso corrige otro problema latente: dos proyectos con un
+`plugins/mi_algo.py` cada uno habrían colisionado en el mismo nombre de módulo sintético.
 
 ### Fase 7 — Entornos y mapas
 - [ ] `EnvironmentSpec` completo: obs/acciones, parámetros del mapa, curriculum

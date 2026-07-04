@@ -4,10 +4,10 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
 
-> **Estado actual**: Fases 1-5 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
-> verificado contra Unity real, configuración jerárquica, y `urc train` funcionando de extremo a
-> extremo (PPO de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`).
-> Siguiente: Fase 6 (un segundo algoritmo genuinamente distinto + plugins de terceros).
+> **Estado actual**: Fases 1-6 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
+> verificado contra Unity real, configuración jerárquica, `urc train` de extremo a extremo (PPO o
+> SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`), y algoritmos de
+> terceros vía `./plugins/` conectados de verdad al CLI. Siguiente: Fase 7 (entornos y mapas).
 
 ## Instalación (desarrollo)
 
@@ -46,8 +46,17 @@ urc init mi-proyecto                    # crea un proyecto nuevo (urc.yaml + exp
 
 urc train                                              # entrena con los defaults (mlagents + sb3-ppo)
 urc train --set training.max_steps=100000              # override puntual
+urc train --set algo=sb3-sac                            # SAC en vez de PPO (solo acciones continuas)
 urc train --experiment experiments/exp1.yaml --resume runs/default/checkpoint_50000_steps.zip
+
+urc algo list                           # nombres disponibles (built-in + plugins en ./plugins/)
+urc algo info sb3-ppo                   # descripción de un algoritmo registrado
 ```
+
+Añadir un algoritmo propio no requiere tocar el código de `urc`: basta con dejar un `.py` en
+`./plugins/` del proyecto que registre una clase con `@algorithms.register("mi-algo")` (ver
+`urc.core.contracts.AlgorithmBackend`); `urc train --set algo=mi-algo` y `urc algo list` lo
+recogen automáticamente.
 
 ## Desarrollo
 
