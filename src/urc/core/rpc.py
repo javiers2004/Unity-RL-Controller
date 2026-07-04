@@ -123,3 +123,6 @@ class JsonLineBridge(BridgeAdapter):
 
     def close(self) -> None:
         self._rpc.close()
+
+    def set_parameters(self, parameters: dict[str, Any]) -> None:
+        self._rpc.call("set_parameters", {"parameters": parameters})

@@ -18,6 +18,28 @@ class LoggingConfig(BaseModel):
     backend: Literal["tensorboard", "wandb", "none"] = "tensorboard"
 
 
+class LessonConfig(BaseModel):
+    """Un escalón de un currículo: parámetros a aplicar y umbral para avanzar
+    al siguiente. Ver `urc.algorithms.curriculum.CurriculumCallback`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    min_reward: float | None = None
+    min_episodes: int = 1
+
+
+class EnvironmentConfig(BaseModel):
+    """Un entorno/mapa declarado en `urc.yaml` bajo `environments.<nombre>`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    build_path: str | None = None
+    bridge_options: dict[str, Any] = Field(default_factory=dict)
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    curriculum: list[LessonConfig] = Field(default_factory=list)
+
+
 class UrcConfig(BaseModel):
     """Configuración resuelta de un experimento: qué bridge, algoritmo, entorno e
     hiperparámetros usar. `hyperparameters` se deja como dict libre porque su forma
@@ -29,6 +51,7 @@ class UrcConfig(BaseModel):
     bridge_options: dict[str, Any] = Field(default_factory=dict)
     algo: str = "sb3-ppo"
     env: str | None = None
+    environments: dict[str, EnvironmentConfig] = Field(default_factory=dict)
     hyperparameters: dict[str, Any] = Field(default_factory=dict)
     training: TrainingConfig = Field(default_factory=TrainingConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)

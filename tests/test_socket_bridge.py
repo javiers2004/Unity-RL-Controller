@@ -31,6 +31,8 @@ def _serve_one_client(server_socket: socket.socket) -> None:
                 result = {"shape": [1], "dtype": "float32"}
             elif method == "action_spec":
                 result = {"shape": [1], "dtype": "float32", "discrete": True}
+            elif method == "set_parameters":
+                result = {"received_parameters": request.get("params", {}).get("parameters")}
             else:
                 writer.write(json.dumps({"error": f"método desconocido: {method}"}) + "\n")
                 writer.flush()
@@ -95,5 +97,16 @@ def test_socket_bridge_serializes_array_like_actions(echo_server: tuple[str, int
         bridge.reset()
         result = bridge.step(action=_FakeNdarray([0.25, -0.5]))
         assert result.info["received_action"] == [0.25, -0.5]
+    finally:
+        bridge.close()
+
+
+def test_socket_bridge_set_parameters_sends_them_over_rpc(echo_server: tuple[str, int]):
+    host, port = echo_server
+
+    bridge = SocketBridge(host, port)
+    try:
+        bridge.reset()
+        bridge.set_parameters({"difficulty": 0.5})
     finally:
         bridge.close()

@@ -140,6 +140,29 @@ def test_close_closes_the_underlying_environment(monkeypatch: pytest.MonkeyPatch
     assert created._env.closed is True
 
 
+def test_set_parameters_forwards_to_environment_parameters_channel(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from mlagents_envs.side_channel.environment_parameters_channel import (
+        EnvironmentParametersChannel,
+    )
+
+    monkeypatch.setattr("urc.bridges.mlagents_bridge.UnityEnvironment", FakeUnityEnvironment)
+
+    received: list[tuple[str, float]] = []
+    monkeypatch.setattr(
+        EnvironmentParametersChannel,
+        "set_float_parameter",
+        lambda self, key, value: received.append((key, value)),
+    )
+
+    created = MLAgentsBridge()
+    created.set_parameters({"difficulty": 0.5, "speed": 2})
+    created.close()
+
+    assert sorted(received) == [("difficulty", 0.5), ("speed", 2.0)]
+
+
 def test_discrete_action_spec_is_reported_correctly(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
         "urc.bridges.mlagents_bridge.UnityEnvironment",

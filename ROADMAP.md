@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 6)
+> **Última actualización**: 2026-07-04 (Fase 7)
 
 ---
 
@@ -163,7 +163,8 @@ unity-rl-controller/
 │   ├── cli/                   comandos (uno por subcomando)
 │   ├── core/
 │   │   ├── contracts.py       BridgeAdapter, AlgorithmBackend, EnvironmentSpec
-│   │   └── registry.py        sistema de registro de plugins
+│   │   ├── registry.py        sistema de registro de plugins (register/register_lazy/set)
+│   │   └── environments.py    EnvironmentSpec desde config -> registry (ver Fase 7)
 │   ├── bridges/
 │   │   ├── mlagents_bridge.py (default, carga perezosa)
 │   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
@@ -172,10 +173,10 @@ unity-rl-controller/
 │   │   ├── sb3_base.py        (SB3Backend: mecánica común a los backends de SB3)
 │   │   ├── sb3_ppo.py         (default: PPO, admite acciones discretas y continuas)
 │   │   ├── sb3_sac.py         (alternativa: SAC, solo acciones continuas)
-│   │   └── gym_bridge.py      (BridgeAdapter -> entorno Gymnasium)
-│   ├── envs/                  EnvironmentSpecs registrados + builds de Unity
+│   │   ├── gym_bridge.py      (BridgeAdapter -> entorno Gymnasium)
+│   │   └── curriculum.py      (CurriculumCallback para SB3)
 │   ├── config/                loader + schema + resolución jerárquica
-│   └── logging/               integraciones tensorboard/wandb/dashboard propio
+│   └── logging/               integraciones tensorboard/wandb/dashboard propio (Fase 9, aún vacío)
 ├── unity/                     proyecto(s) de Unity con las escenas/mapas
 ├── examples/                  proyectos de ejemplo end-to-end
 ├── docs/                      documentación pública (mkdocs)
@@ -357,11 +358,51 @@ absoluta (`_plugin_module_name`, hash de la ruta resuelta): si el archivo ya se 
 proceso, no se vuelve a importar. De paso corrige otro problema latente: dos proyectos con un
 `plugins/mi_algo.py` cada uno habrían colisionado en el mismo nombre de módulo sintético.
 
-### Fase 7 — Entornos y mapas
-- [ ] `EnvironmentSpec` completo: obs/acciones, parámetros del mapa, curriculum
-- [ ] `urc env list / describe / create`
-- [ ] Soporte de curriculum learning y domain randomization vía config
-- [ ] (Opcional) generación procedural de mapas parametrizada
+### Fase 7 — Entornos y mapas ✅
+- [x] `EnvironmentSpec` completo: `build_path`, `bridge_options`, `parameters` (domain
+      randomization estática), `curriculum` (lista de lessons). `observation_spec`/`action_spec`
+      se dejan sin poblar a propósito: son responsabilidad dinámica del bridge (`bridge.reset()`
+      ya las expone), no algo que declarar a mano en YAML.
+- [x] `urc env list / describe / create` (`src/urc/cli/env.py`), y `urc env launch --env <nombre>`
+      además (no estaba en el checklist original, pero es la extensión natural de la Fase 3 ahora
+      que existen entornos registrados: usa el `build_path`/`bridge_options` del entorno, con los
+      flags explícitos de siempre tomando precedencia si se pasan).
+- [x] Soporte real (no un stub) de curriculum learning y domain randomization vía config:
+  - `BridgeAdapter.set_parameters(dict)` — nuevo método **no abstracto** con no-op por defecto
+    (extensión retrocompatible del contrato, igual que `discrete_branches` en la Fase 5): los
+    bridges existentes no necesitan implementarlo para seguir siendo válidos.
+  - `MLAgentsBridge.set_parameters`: lo envía a Unity de verdad vía
+    `EnvironmentParametersChannel` de ML-Agents (side channel). La escena solo lo usa si su propio
+    código C# lo lee explícitamente — el envío en sí funciona igual lo lea o no.
+  - `JsonLineBridge.set_parameters` (socket/subproceso): un método RPC más (`"set_parameters"`).
+  - `CurriculumCallback` (`src/urc/algorithms/curriculum.py`): callback real de SB3 que aplica la
+    primera lesson al empezar a entrenar y avanza a la siguiente cuando la recompensa media de
+    los últimos N episodios supera el umbral de la lesson. Acoplado a SB3 a propósito (es nuestro
+    único bucle de entrenamiento hoy); otro backend necesitaría su propia integración.
+  - `parameters` estáticos de un entorno se aplican una vez al empezar a entrenar
+    (`SB3Backend.train`), antes de que el currículo (si lo hay) aplique la lesson 0.
+- [ ] Generación procedural de mapas parametrizada — **no se ha hecho**: es explícitamente
+      opcional en el checklist original y requiere scripting de Unity Editor (C#), fuera del
+      alcance de una librería del lado Python. Queda descartada salvo que surja una necesidad
+      concreta más adelante.
+
+**Verificado manualmente de extremo a extremo** (2026-07-04): `urc env create maze-v1
+--build-path builds/maze.exe`, `urc env list`, `urc env describe maze-v1` contra un `urc.yaml`
+real; y `urc train` con un entorno `socket` de juguete configurado con dos *lessons* de currículo
+— el servidor de juguete confirmó recibir `{"difficulty": 0.1}` al empezar y `{"difficulty": 0.9}`
+tras el avance, exactamente como se diseñó. Automatizado después en
+`tests/test_cli_train_curriculum.py`.
+
+**Decisión de diseño**: `Registry` gana un método `set()` (upsert, no falla si ya existe) además
+de `register()` (falla si ya existe). Un `EnvironmentSpec` se reconstruye cada vez que se resuelve
+la config — no es un registro de "una vez" como un plugin de código — así que necesita semántica
+de upsert, no de registro único.
+
+**Ajuste a la estructura de repositorio propuesta (sección 7)**: la carpeta `envs/` que se había
+planeado ahí no ha hecho falta. Los entornos son datos declarados en YAML (`environments:` en
+`urc.yaml`), no clases Python como los bridges/algoritmos, así que no hay "implementaciones" que
+guardar en una carpeta de plugins — toda la lógica cabe en `core/environments.py`. Se ha eliminado
+la carpeta `envs/` vacía que quedó de la Fase 1.
 
 ### Fase 8 — Evaluación y benchmarking
 - [ ] `urc eval` (N episodios, métricas: reward medio, tasa de éxito, duración)

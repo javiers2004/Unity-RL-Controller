@@ -5,6 +5,9 @@ from typing import Any
 import numpy as np
 from mlagents_envs.base_env import ActionTuple
 from mlagents_envs.environment import UnityEnvironment
+from mlagents_envs.side_channel.environment_parameters_channel import (
+    EnvironmentParametersChannel,
+)
 
 from urc.core.contracts import ActionSpec, BridgeAdapter, ObservationSpec, StepResult
 from urc.core.registry import bridges
@@ -31,6 +34,7 @@ class MLAgentsBridge(BridgeAdapter):
         no_graphics: bool = False,
         timeout_wait: int = 60,
     ) -> None:
+        self._parameters_channel = EnvironmentParametersChannel()
         self._env = UnityEnvironment(
             file_name=file_name,
             worker_id=worker_id,
@@ -38,6 +42,7 @@ class MLAgentsBridge(BridgeAdapter):
             seed=seed,
             no_graphics=no_graphics,
             timeout_wait=timeout_wait,
+            side_channels=[self._parameters_channel],
         )
 
     def reset(self) -> Any:
@@ -91,6 +96,16 @@ class MLAgentsBridge(BridgeAdapter):
 
     def close(self) -> None:
         self._env.close()
+
+    def set_parameters(self, parameters: dict[str, Any]) -> None:
+        """Envía parámetros float a Unity vía `EnvironmentParametersChannel`.
+
+        La escena solo los usa si su propio código C# los lee explícitamente
+        con `Academy.Instance.EnvironmentParameters.GetWithDefault(...)` — el
+        envío en sí funciona igual lo lea la escena o no.
+        """
+        for key, value in parameters.items():
+            self._parameters_channel.set_float_parameter(key, float(value))
 
     def _only_behavior_name(self) -> str:
         if not self._env.behavior_specs:

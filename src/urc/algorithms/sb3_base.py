@@ -6,6 +6,7 @@ from typing import Any, ClassVar
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.callbacks import CheckpointCallback
 
+from urc.algorithms.curriculum import CurriculumCallback
 from urc.algorithms.gym_bridge import BridgeGymEnv
 from urc.core.contracts import AlgorithmBackend, BridgeAdapter, EnvironmentSpec, Policy
 
@@ -37,6 +38,9 @@ class SB3Backend(AlgorithmBackend):
         env = BridgeGymEnv(bridge)
         self._check_action_space(env)
 
+        if env_spec.parameters:
+            bridge.set_parameters(env_spec.parameters)
+
         hyperparameters = dict(config.get("hyperparameters", {}))
         training = config.get("training", {})
         resume_from = config.get("resume_from")
@@ -48,18 +52,24 @@ class SB3Backend(AlgorithmBackend):
             model = self.algorithm_cls(self.policy_name, env, **hyperparameters)
             reset_num_timesteps = True
 
-        callback = None
+        callbacks = []
         checkpoint_every = training.get("checkpoint_every")
         checkpoint_dir = config.get("checkpoint_dir")
         if checkpoint_every and checkpoint_dir:
             Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
-            callback = CheckpointCallback(
-                save_freq=checkpoint_every, save_path=str(checkpoint_dir), name_prefix="checkpoint"
+            callbacks.append(
+                CheckpointCallback(
+                    save_freq=checkpoint_every,
+                    save_path=str(checkpoint_dir),
+                    name_prefix="checkpoint",
+                )
             )
+        if env_spec.curriculum:
+            callbacks.append(CurriculumCallback(bridge, env_spec.curriculum))
 
         model.learn(
             total_timesteps=training.get("max_steps", 500_000),
-            callback=callback,
+            callback=callbacks or None,
             reset_num_timesteps=reset_num_timesteps,
         )
         return SB3Policy(model)

@@ -32,3 +32,39 @@ def test_hyperparameters_accepts_arbitrary_keys():
     config = UrcConfig.model_validate({"hyperparameters": {"learning_rate": 1e-4, "custom": True}})
 
     assert config.hyperparameters == {"learning_rate": 1e-4, "custom": True}
+
+
+def test_environments_section_parses_build_path_and_curriculum():
+    config = UrcConfig.model_validate(
+        {
+            "environments": {
+                "maze-v1": {
+                    "build_path": "builds/maze.exe",
+                    "bridge_options": {"no_graphics": True},
+                    "curriculum": [
+                        {"parameters": {"difficulty": 0.1}, "min_reward": 0.5},
+                        {"parameters": {"difficulty": 0.9}},
+                    ],
+                }
+            }
+        }
+    )
+
+    env = config.environments["maze-v1"]
+    assert env.build_path == "builds/maze.exe"
+    assert env.bridge_options == {"no_graphics": True}
+    assert env.curriculum[0].min_reward == 0.5
+    assert env.curriculum[0].min_episodes == 1
+    assert env.curriculum[1].min_reward is None
+
+
+def test_environment_unknown_key_is_rejected():
+    with pytest.raises(ValidationError):
+        UrcConfig.model_validate({"environments": {"maze-v1": {"build_pth": "typo.exe"}}})
+
+
+def test_lesson_unknown_key_is_rejected():
+    with pytest.raises(ValidationError):
+        UrcConfig.model_validate(
+            {"environments": {"maze-v1": {"curriculum": [{"min_rewrd": 1.0}]}}}
+        )

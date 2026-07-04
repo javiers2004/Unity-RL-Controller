@@ -13,6 +13,14 @@ def test_register_as_decorator_and_get_by_name():
     assert registry.get("dummy") is Dummy
 
 
+def test_set_upserts_without_raising_on_existing_name():
+    registry: Registry[str] = Registry("cosa")
+    registry.set("x", "primero")
+    registry.set("x", "segundo")
+
+    assert registry.get("x") == "segundo"
+
+
 def test_register_with_explicit_value():
     registry: Registry[object] = Registry("cosa")
 

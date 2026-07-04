@@ -31,6 +31,8 @@ def _serve_fixed_length_episodes(server_socket: socket.socket, episode_length: i
                 result = {"shape": [1], "dtype": "float32"}
             elif method == "action_spec":
                 result = {"shape": [1], "dtype": "float32", "discrete": False}
+            elif method == "set_parameters":
+                result = None
             else:
                 writer.write(json.dumps({"error": f"método desconocido: {method}"}) + "\n")
                 writer.flush()

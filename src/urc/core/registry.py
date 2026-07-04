@@ -38,6 +38,17 @@ class Registry(Generic[T]):
             raise ValueError(f"Ya hay un/a {self._kind} registrado/a con el nombre '{name}'")
         self._items[name] = value
 
+    def set(self, name: str, value: T) -> None:
+        """Como `register`, pero sin fallar si `name` ya existe (upsert).
+
+        Pensado para cosas re-derivables de config (p. ej. entornos): a
+        diferencia de un plugin de código, que solo debería registrarse una
+        vez, un `EnvironmentSpec` se reconstruye cada vez que se resuelve la
+        config, y volver a "registrarlo" con los mismos datos es normal, no
+        un error de programación.
+        """
+        self._items[name] = value
+
     def get(self, name: str) -> T:
         if name not in self._items and name in self._lazy_modules:
             module_name, install_hint = self._lazy_modules[name]

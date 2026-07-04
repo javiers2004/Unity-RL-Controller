@@ -37,10 +37,20 @@ class EnvironmentSpec:
 
     name: str
     build_path: str | None = None
+    # kwargs que se pasan al constructor del bridge elegido (p. ej. no_graphics
+    # para mlagents, host/port para socket). Ver UrcConfig.bridge_options: esto
+    # es lo mismo pero declarado por entorno en vez de globalmente.
+    bridge_options: dict[str, Any] = field(default_factory=dict)
     observation_spec: ObservationSpec | None = None
     action_spec: ActionSpec | None = None
+    # Parámetros de entorno estáticos (domain randomization): se aplican una
+    # vez al empezar a entrenar, vía BridgeAdapter.set_parameters().
     parameters: dict[str, Any] = field(default_factory=dict)
-    curriculum: dict[str, Any] | None = None
+    # Lista de "lessons" para curriculum learning: cada una es un dict con
+    # `parameters` (aplicados vía set_parameters al entrar en la lesson) y
+    # `min_reward`/`min_episodes` (umbral para avanzar a la siguiente). None o
+    # lista vacía = sin currículo. Ver CurriculumCallback en urc.algorithms.
+    curriculum: list[dict[str, Any]] | None = None
 
 
 class BridgeAdapter(ABC):
@@ -65,6 +75,15 @@ class BridgeAdapter(ABC):
     @abstractmethod
     def close(self) -> None:
         """Libera los recursos del bridge (procesos, sockets, builds de Unity...)."""
+
+    def set_parameters(self, parameters: dict[str, Any]) -> None:  # noqa: B027
+        """Aplica parámetros de entorno (domain randomization / currículo).
+
+        No es abstracto a propósito: por defecto no hace nada, así que los
+        bridges existentes (y los de terceros ya escritos) no necesitan
+        implementarlo para seguir siendo válidos. Los que sí lo soporten
+        (p. ej. `MLAgentsBridge` vía side channels) lo sobrescriben.
+        """
 
 
 class Policy(ABC):
