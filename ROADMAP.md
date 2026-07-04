@@ -247,10 +247,32 @@ discreta). Instalación usada: Unity Hub 3.19.3 + Unity 6000.0.77f1, proyecto de
 clonado de `Unity-Technologies/ml-agents` (carpeta `Project/`, no `DevProject/` ni
 `PerformanceProject/`, que están casi vacíos).
 
-### Fase 4 — Sistema de configuración
-- [ ] Loader de YAML jerárquico (defaults → proyecto → experimento → CLI)
-- [ ] Validación con schema (pydantic) y errores legibles
-- [ ] `urc config show / validate / diff`
+### Fase 4 — Sistema de configuración ✅
+- [x] Loader de YAML jerárquico (defaults → proyecto → experimento → CLI),
+      `urc/config/loader.py::resolve_config`, con deep-merge (los dicts anidados se
+      fusionan, no se sustituyen wholesale)
+- [x] Validación con schema (pydantic v2, `urc/config/schema.py::UrcConfig`) y errores
+      legibles (`ConfigError`, lista "campo: motivo" en vez de traceback de pydantic)
+- [x] `urc config show / validate / diff`
+
+**Defaults empaquetados vs defaults del schema**: `UrcConfig()` "a pelo" (sin pasar por
+`resolve_config`) tiene `hyperparameters={}` — los valores reales (`learning_rate`, `gamma`,
+`batch_size`) viven en `src/urc/config/defaults.yaml`, la capa 1 de la jerarquía. Son
+intencionalmente distintos: el schema define la *forma*, `defaults.yaml` define los *valores*
+por defecto reales, siguiendo el principio de "config por encima de código" (sección 2).
+
+**Gotcha real encontrado**: `yaml.safe_load("3e-4")` devuelve el *string* `"3e-4"`, no el float
+`0.0003` — la spec YAML 1.1 exige un punto decimal en la mantisa para reconocer notación
+científica. Como es la forma más natural de escribir un learning rate en un `--set`, se sustituyó
+por un parser de escalares propio (`int` → `float` → `bool`/`null` → YAML como último recurso)
+que sí lo entiende. Sin este fix, `--set hyperparameters.learning_rate=3e-4` habría fallado en
+silencio (guardaría un string donde se espera un número).
+
+**Nota sobre `algo: mlagents-ppo`**: es un nombre provisional en `defaults.yaml`; todavía no
+existe ningún backend de algoritmo registrado (eso es la Fase 6). El sistema de config no valida
+que `bridge`/`algo`/`env` existan de verdad en sus registries — esa comprobación ocurre al
+resolver/instanciar desde config (Phase 5+), reutilizando el `KeyError` con opciones disponibles
+que ya da `Registry.get()` (Fase 2).
 
 ### Fase 5 — CLI mínimo viable de entrenamiento
 - [ ] `urc train` uniendo bridge + config + algoritmo por defecto (PPO nativo de ML-Agents)

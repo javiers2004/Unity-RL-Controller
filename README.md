@@ -4,9 +4,9 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
 
-> **Estado actual**: Fases 1-3 completadas y verificadas contra Unity real (esqueleto,
-> contratos/plugins, bridge de ML-Agents + bridges de ejemplo por socket/subproceso).
-> Siguiente: Fase 4 (sistema de configuración).
+> **Estado actual**: Fases 1-4 completadas (esqueleto, contratos/plugins, bridge de ML-Agents
+> verificado contra Unity real, sistema de configuración jerárquico). Siguiente: Fase 5 (CLI
+> mínimo viable de entrenamiento).
 
 ## Instalación (desarrollo)
 
@@ -29,6 +29,12 @@ pip install -e ".[dev,mlagents]"
 urc version
 urc env launch                          # conecta con el editor de Unity abierto (pulsa Play)
 urc env launch --executable build.exe --no-graphics   # conecta con un build headless
+
+urc config show                                          # config resuelta (defaults de la librería)
+urc config show --project urc.yaml --experiment exp.yaml # + config de proyecto y experimento
+urc config show --set hyperparameters.learning_rate=1e-4 # + override puntual (repetible)
+urc config validate --project urc.yaml                   # valida sin imprimir
+urc config diff urc.yaml otro.yaml                        # diferencias entre dos configs
 ```
 
 ## Desarrollo

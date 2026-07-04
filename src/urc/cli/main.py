@@ -3,6 +3,7 @@ import sys
 import typer
 
 from urc import __version__
+from urc.cli.config import config_app
 from urc.cli.env import env_app
 
 # En Windows la consola no siempre usa UTF-8 por defecto, lo que corrompe
@@ -23,6 +24,7 @@ app = typer.Typer(
 
 
 app.add_typer(env_app, name="env")
+app.add_typer(config_app, name="config")
 
 
 @app.callback()
