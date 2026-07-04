@@ -8,6 +8,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
 from urc.algorithms.curriculum import CurriculumCallback
 from urc.algorithms.gym_bridge import BridgeGymEnv
+from urc.algorithms.recording import RecordingCallback
 from urc.core.contracts import AlgorithmBackend, BridgeAdapter, EnvironmentSpec, Policy
 
 
@@ -106,6 +107,10 @@ class SB3Backend(AlgorithmBackend):
             )
         if env_spec.curriculum:
             callbacks.append(CurriculumCallback(bridge, env_spec.curriculum))
+
+        recording = config.get("recording", {})
+        if recording.get("enabled") and checkpoint_dir:
+            callbacks.append(RecordingCallback(bridge, recording, Path(checkpoint_dir)))
 
         model.learn(
             total_timesteps=training.get("max_steps", 500_000),

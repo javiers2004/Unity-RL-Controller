@@ -24,6 +24,30 @@ class LoggingConfig(BaseModel):
     project: str = "urc"
 
 
+class RecordingConfig(BaseModel):
+    """Vídeo automático del progreso de entrenamiento — ver
+    `urc.algorithms.recording.RecordingCallback`. Solo tiene efecto con el
+    bridge `mlagents` y el script `unity/UrcVideoRecorder/UrcVideoRecorder.cs`
+    en la escena; con cualquier otro bridge, `enabled: true` solo avisa."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = False
+    # Velocidad de Time.timeScale durante la mayor parte del entrenamiento.
+    fast_forward_speed: float = 20.0
+    # Cada cuántos pasos se intercala un episodio a velocidad normal (1.0).
+    normal_speed_every_n_steps: int = 1000
+    # Episodios a velocidad normal al terminar, con la política ya entrenada.
+    final_episodes: int = 4
+    # Debe coincidir con CaptureIntervalSeconds en UrcVideoRecorder.cs (0.1s =
+    # 10 fps): ScreenCapture.CaptureScreenshot solo admite una captura "en
+    # vuelo" a la vez, así que Unity captura a un ritmo real fijo de 10 fps,
+    # no a la tasa de refresco del editor — ver ROADMAP, Fase 8.
+    fps: int = 10
+    # Conserva los fotogramas PNG sueltos además del .mp4 (ocupan mucho más).
+    keep_frames: bool = False
+
+
 class LessonConfig(BaseModel):
     """Un escalón de un currículo: parámetros a aplicar y umbral para avanzar
     al siguiente. Ver `urc.algorithms.curriculum.CurriculumCallback`."""
@@ -61,4 +85,5 @@ class UrcConfig(BaseModel):
     hyperparameters: dict[str, Any] = Field(default_factory=dict)
     training: TrainingConfig = Field(default_factory=TrainingConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    recording: RecordingConfig = Field(default_factory=RecordingConfig)
     output_dir: str = "runs"

@@ -3,6 +3,7 @@ from urc.config.schema import (
     EnvironmentConfig,
     LessonConfig,
     LoggingConfig,
+    RecordingConfig,
     TrainingConfig,
     UrcConfig,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "EnvironmentConfig",
     "LessonConfig",
     "LoggingConfig",
+    "RecordingConfig",
     "TrainingConfig",
     "UrcConfig",
     "diff_configs",

@@ -9,6 +9,7 @@ from mlagents_envs.side_channel.environment_parameters_channel import (
     EnvironmentParametersChannel,
 )
 
+from urc.bridges._recording_channel import RecordingControlChannel
 from urc.core.contracts import ActionSpec, BridgeAdapter, ObservationSpec, StepResult
 from urc.core.registry import bridges
 
@@ -35,6 +36,7 @@ class MLAgentsBridge(BridgeAdapter):
         timeout_wait: int = 60,
     ) -> None:
         self._parameters_channel = EnvironmentParametersChannel()
+        self._recording_channel = RecordingControlChannel()
         self._env = UnityEnvironment(
             file_name=file_name,
             worker_id=worker_id,
@@ -42,7 +44,7 @@ class MLAgentsBridge(BridgeAdapter):
             seed=seed,
             no_graphics=no_graphics,
             timeout_wait=timeout_wait,
-            side_channels=[self._parameters_channel],
+            side_channels=[self._parameters_channel, self._recording_channel],
         )
 
     def reset(self) -> Any:
@@ -106,6 +108,17 @@ class MLAgentsBridge(BridgeAdapter):
         """
         for key, value in parameters.items():
             self._parameters_channel.set_float_parameter(key, float(value))
+
+    def start_recording(self, output_dir: str) -> None:
+        """Le dice a la escena (vía `unity/UrcVideoRecorder/UrcVideoRecorder.cs`) que
+        empiece a capturar fotogramas en `output_dir`. No hace nada si la escena no
+        tiene ese script — es responsabilidad de quien active `recording.enabled`.
+        """
+        self._recording_channel.start_recording(output_dir)
+
+    def set_time_scale(self, scale: float) -> None:
+        """Cambia `Time.timeScale` en Unity (requiere `UrcVideoRecorder.cs` en la escena)."""
+        self._recording_channel.set_time_scale(scale)
 
     def _only_behavior_name(self) -> str:
         if not self._env.behavior_specs:

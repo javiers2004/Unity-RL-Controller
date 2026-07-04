@@ -46,3 +46,42 @@ bridge_options:
 
 Así no hace falta tener el editor abierto ni pulsar Play — útil para dejar entrenamientos largos
 corriendo sin la ventana del editor delante.
+
+## Vídeo automático del progreso de entrenamiento
+
+`urc` puede generar un `.mp4` con el progreso del entrenamiento: la mayor parte a cámara rápida,
+con ventanas a velocidad normal cada N pasos para apreciar la mejora, terminando con varios
+episodios normales del agente ya entrenado. Requiere dos cosas que no vienen activadas por
+defecto:
+
+1. **Instalar el extra `video`**: `pip install -e ".[dev,mlagents,sb3,video]"` (o `.[dev,all]`,
+   que ya lo incluye). Trae `imageio` + un binario de `ffmpeg` portable, sin instalar nada aparte.
+2. **Copiar el script C# a tu proyecto de Unity**: copia
+   [`unity/UrcVideoRecorder/UrcVideoRecorder.cs`](../../unity/UrcVideoRecorder/UrcVideoRecorder.cs)
+   a `Assets/UrcRecorder/UrcVideoRecorder.cs` dentro de tu clon de `ml-agents`, y arrástralo como
+   componente sobre cualquier GameObject de la escena `Basic.unity` (p. ej. la Main Camera). Esto
+   es un paso manual en el Editor — no hay forma de automatizarlo desde fuera de Unity.
+
+Con eso hecho:
+
+```bash
+urc train --set recording.enabled=true --set recording.fast_forward_speed=50
+```
+
+Al terminar, el vídeo queda en `runs/default/video/training_progress.mp4`. Opciones disponibles
+(`urc config show --set recording.<opción>=...`): `fast_forward_speed` (por defecto 20),
+`normal_speed_every_n_steps` (1000), `final_episodes` (4), `fps` (10 — debe coincidir con
+`CaptureIntervalSeconds` en `UrcVideoRecorder.cs`, ver comentario ahí si cambias uno de los dos) y
+`keep_frames` (false — si es `true`, conserva también los PNG sueltos en `video_frames/`, útil
+solo para depurar).
+
+Solo funciona con el bridge `mlagents`: `BridgeAdapter` no expone el renderizado de Unity a
+propósito (ver ROADMAP, Fase 8), así que capturar píxeles solo es posible desde dentro de la
+propia escena. Con cualquier otro bridge, `recording.enabled=true` simplemente avisa y no hace
+nada — el entrenamiento sigue igual, sin vídeo.
+
+**Verificado de verdad**: una tanda de 5.000 pasos + 3 episodios finales produjo un vídeo de 453
+fotogramas (45.3 s) con contenido genuino. Si tu escena resetea episodios recargando la escena
+entera (como hace `Basic` — ver `BasicController.ResetAgent()`), `UrcVideoRecorder.cs` ya lo tiene
+en cuenta (usa campos `static` que sobreviven a la recarga); si escribes tu propio script de
+grabación para otra escena, ten en cuenta esa misma trampa — ver ROADMAP, Fase 8, para el porqué.

@@ -441,6 +441,69 @@ las cuales está en el plan actual. En su lugar, `urc record` guarda un replay e
 una política sin tener Unity abierto, aunque no sea "ver" el episodio. Grabar vídeo de verdad queda
 anotado como posible ampliación futura si hace falta, no descartado.
 
+**Ampliación implementada y verificada (2026-07-04): vídeo real del progreso de entrenamiento.**
+La limitación de arriba sigue en pie para `urc record`, pero para `urc train` sí se implementó una
+vía real:
+- `unity/UrcVideoRecorder/UrcVideoRecorder.cs`: script C# (fuera del contrato `BridgeAdapter` a
+  propósito, ver más abajo) que el usuario añade a su escena. Captura fotogramas leyendo el
+  framebuffer directamente (`Texture2D.ReadPixels`, no `ScreenCapture.CaptureScreenshot` — ver
+  gotcha #2) y escucha un side channel nuevo para cambiar `Time.timeScale`.
+- `RecordingControlChannel` (`src/urc/bridges/_recording_channel.py`) + `MLAgentsBridge.set_time_scale`/
+  `start_recording`: el lado Python de ese side channel, mismo patrón que
+  `EnvironmentParametersChannel`/`set_parameters`.
+- `RecordingCallback` (`src/urc/algorithms/recording.py`), enganchado en `SB3Backend.train()` junto
+  a `CurriculumCallback`/`CheckpointCallback`: durante el grueso del entrenamiento sube
+  `Time.timeScale` (cámara rápida); cada `normal_speed_every_n_steps` pasos intercala un episodio a
+  velocidad normal (`1.0`) para que se note la mejora; al terminar, graba `final_episodes` más con
+  la política ya entrenada; y ensambla todos los fotogramas en un único `.mp4` con `imageio`
+  (extra opcional `video`, trae su propio `ffmpeg` portable — no había `ffmpeg` en el `PATH` de
+  este sistema).
+- **Deliberadamente fuera del contrato `BridgeAdapter`** (a diferencia de `set_parameters`, que sí
+  tiene un default no-op ahí): `set_time_scale`/`start_recording` son un concepto específico de
+  renderizado de Unity, no algo que tenga sentido pedirle a cualquier bridge genéricamente. Se
+  detectan con `hasattr(bridge, ...)` en `RecordingCallback`; con cualquier bridge que no los tenga,
+  `recording.enabled=true` solo avisa (`warnings.warn`) y el entrenamiento sigue igual, sin vídeo.
+
+**Verificado de verdad contra Unity real** (escena Basic, editor): tras cuatro gotchas reales
+(abajo), un vídeo de 5.000 pasos + 3 episodios finales produjo **453 fotogramas / 45.3 s**, con
+diferencias de píxeles genuinas entre el primero, el de en medio y el último frame (contenido real,
+no repetido ni atascado) — `runs/default/video/training_progress.mp4`.
+
+Cuatro problemas reales encontrados montando esto, todos con causa raíz identificada (no parches a
+ciegas):
+1. **`Time.timeScale` interpretado como 500 en vez de 50**: `float.TryParse(string)` en C# sin
+   especificar cultura usa la del sistema operativo. En español, `.` es separador de miles, así que
+   `"50.0"` (el formato que manda Python) se leía mal y superaba el límite de 100 del Editor.
+   Arreglado forzando `CultureInfo.InvariantCulture` en el `TryParse`.
+2. **`ScreenCapture.CaptureScreenshot(path)` solo capturaba 1-2 fotogramas de miles de peticiones,
+   sin ningún error en consola**: esa API encola la captura de forma asíncrona y solo admite una
+   "en vuelo" a la vez; las peticiones de más se descartan en silencio. Se cambió a leer el
+   framebuffer directamente con `Texture2D.ReadPixels` dentro de una corrutina con
+   `WaitForEndOfFrame` — sigue sin ser suficiente por sí solo (ver gotcha #4), pero es la técnica
+   correcta y fiable.
+3. Intento intermedio descartado: enganchar la captura a `Academy.AgentPreStep` (una vez por paso
+   de RL) en vez de a `Update()`, con la hipótesis de que a `timeScale` alto Unity agrupa muchos
+   `FixedUpdate` por cada fotograma renderizado. Cierto, pero no era la causa principal — se
+   mantiene la lectura de que `ReadPixels` solo tiene sentido si va atado a un fotograma realmente
+   renderizado (`WaitForEndOfFrame`), no a cada paso de simulación.
+4. **La causa real: la escena `Basic` resetea cada episodio recargando la escena ENTERA**
+   (`SceneManager.LoadScene`, en `BasicController.ResetAgent()` — comentario propio del ejemplo
+   oficial: "a very inefficient way to reset the scene. Used here for testing."). Como los
+   episodios de Basic son cortísimos, esto destruye y recrea `UrcVideoRecorder` constantemente
+   durante todo el entrenamiento — con campos de instancia normales, cada recarga perdía la carpeta
+   de salida y reiniciaba el contador de fotogramas a 0 (sobrescribiendo capturas ya guardadas), y
+   el `OnDisable` de cada recarga reseteaba `Time.timeScale` a 1 justo después de que
+   `RecordingCallback` lo hubiera puesto a 50. Diagnosticado añadiendo logs temporales
+   (`OnEnable`/`OnDisable` con `Time.frameCount`) que mostraron el ciclo destruir/recrear
+   disparándose cada pocos fotogramas. Arreglado usando campos **estáticos** (`s_OutputDir`,
+   `s_FrameCounter`, `s_LastCaptureTime`, `s_CaptureTexture`) — sobreviven a la recarga de escena
+   porque viven en el dominio de C#, no en la instancia del `GameObject` — y quitando el reset de
+   `Time.timeScale` de `OnDisable` (ya no hace falta, y deshacía el control de `RecordingCallback`
+   en cada episodio).
+
+Ejemplo end-to-end documentado en
+[`examples/unity_basic_ppo/README.md`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/unity_basic_ppo/README.md#vídeo-automático-del-progreso-de-entrenamiento).
+
 **Verificado manualmente de extremo a extremo** (2026-07-04): entrené un checkpoint diminuto contra
 un servidor `socket` de juguete, corrí `urc eval` sobre él sin pasarle ninguna config (usó
 `run_info.json` solo), comprobé el JSON de resultado guardado, corrí `urc compare` con la ruta del

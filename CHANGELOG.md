@@ -7,6 +7,21 @@ publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).
 
 ## [Unreleased]
 
+### Ampliación posterior a la Fase 8 — vídeo automático del progreso de entrenamiento
+- Nuevo `unity/UrcVideoRecorder/UrcVideoRecorder.cs`: script para la escena de Unity que captura
+  fotogramas (`Texture2D.ReadPixels`) y expone `Time.timeScale` a Python.
+- Nuevo side channel `RecordingControlChannel` + `MLAgentsBridge.set_time_scale`/`start_recording`.
+- Nuevo `RecordingCallback` (SB3): cámara rápida durante el grueso del entrenamiento, ventanas a
+  velocidad normal cada N pasos, episodios finales normales, y ensamblado a `.mp4` con `imageio`.
+- Nueva sección de config `recording:` (`enabled`, `fast_forward_speed`,
+  `normal_speed_every_n_steps`, `final_episodes`, `fps`, `keep_frames`) y nuevo extra `video`.
+- **Verificado de verdad contra Unity real** (escena Basic): 453 fotogramas / 45.3 s con contenido
+  genuino, tras encontrar y arreglar cuatro bugs reales — el más interesante: la escena Basic
+  resetea cada episodio recargando la escena entera, destruyendo y recreando el componente
+  constantemente; arreglado con campos `static` que sobreviven a la recarga. Detalle completo en
+  `ROADMAP.md`, Fase 8.
+- Documentado en `examples/unity_basic_ppo/README.md`.
+
 ### Fase 12 — Pulido final y comunidad
 - README: badges reales (CI, Unity integration, Docs, licencia, versión de Python) y una sección
   "Demo" con una transcripción de terminal real y verificada (`urc train`/`urc eval` contra

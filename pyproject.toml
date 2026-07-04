@@ -70,12 +70,18 @@ sb3 = [
 wandb = [
     "wandb>=0.16",
 ]
+video = [
+    # [ffmpeg] trae un binario de ffmpeg portable (imageio-ffmpeg): no hace
+    # falta que el usuario lo instale a mano para ensamblar el vídeo de
+    # progreso de RecordingCallback.
+    "imageio[ffmpeg]>=2.31",
+]
 docs = [
     "mkdocs>=1.5",
     "mkdocs-material>=9.5",
 ]
 all = [
-    "urc[mlagents,sb3,wandb]",
+    "urc[mlagents,sb3,wandb,video]",
 ]
 
 [tool.hatch.build.targets.wheel]
