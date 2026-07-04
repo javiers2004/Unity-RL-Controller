@@ -56,6 +56,30 @@ def test_resolve_config_uses_library_defaults_when_nothing_else_given():
     }
 
 
+def test_resolve_config_applies_extra_defaults_below_project_config(tmp_path: Path):
+    project = tmp_path / "urc.yaml"
+    project.write_text("bridge: mlagents\n")
+
+    config = resolve_config(project_path=project, extra_defaults={"bridge": "socket"})
+
+    # El project.yaml explícito sigue ganando a los extra_defaults.
+    assert config.bridge == "mlagents"
+
+
+def test_resolve_config_extra_defaults_apply_when_project_does_not_set_it(tmp_path: Path):
+    project = tmp_path / "urc.yaml"
+    project.write_text("algo: sb3-sac\n")
+
+    config = resolve_config(
+        project_path=project,
+        extra_defaults={"bridge": "socket", "bridge_options": {"port": 1234}},
+    )
+
+    assert config.bridge == "socket"
+    assert config.bridge_options == {"port": 1234}
+    assert config.algo == "sb3-sac"
+
+
 def test_resolve_config_layers_project_then_experiment_then_overrides(tmp_path: Path):
     project = tmp_path / "urc.yaml"
     project.write_text("bridge: socket\nhyperparameters:\n  learning_rate: 0.001\n")

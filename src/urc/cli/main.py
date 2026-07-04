@@ -4,10 +4,13 @@ import typer
 
 from urc import __version__
 from urc.cli.algo import algo_app
+from urc.cli.compare import compare as compare_command
 from urc.cli.config import config_app
 from urc.cli.doctor import doctor as doctor_command
 from urc.cli.env import env_app
+from urc.cli.eval import eval_command
 from urc.cli.init import init as init_command
+from urc.cli.record import record as record_command
 from urc.cli.train import train as train_command
 
 # En Windows la consola no siempre usa UTF-8 por defecto, lo que corrompe
@@ -31,6 +34,9 @@ app.add_typer(env_app, name="env")
 app.add_typer(config_app, name="config")
 app.add_typer(algo_app, name="algo")
 app.command("train")(train_command)
+app.command("eval")(eval_command)
+app.command("compare")(compare_command)
+app.command("record")(record_command)
 app.command("doctor")(doctor_command)
 app.command("init")(init_command)
 

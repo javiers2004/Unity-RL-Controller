@@ -7,18 +7,11 @@ from collections.abc import Callable
 from typing import IO, Any
 
 from urc.core.contracts import ActionSpec, BridgeAdapter, ObservationSpec, StepResult
+from urc.core.jsonutil import json_safe
 
 
 class RpcError(RuntimeError):
     """El extremo remoto devolvió un error o no respondió el protocolo esperado."""
-
-
-def _json_safe(value: Any) -> Any:
-    """Convierte arrays/escalares de numpy (frecuentes al venir de SB3 u otras
-    librerías del ecosistema Gym) a tipos nativos serializables en JSON, sin
-    depender de numpy: cualquier objeto con `.tolist()` sirve."""
-    to_list = getattr(value, "tolist", None)
-    return to_list() if callable(to_list) else value
 
 
 class JsonLineRpcClient:
@@ -99,7 +92,7 @@ class JsonLineBridge(BridgeAdapter):
         return self._rpc.call("reset")
 
     def step(self, action: Any) -> StepResult:
-        result = self._rpc.call("step", {"action": _json_safe(action)})
+        result = self._rpc.call("step", {"action": json_safe(action)})
         return StepResult(
             observation=result["observation"],
             reward=result["reward"],

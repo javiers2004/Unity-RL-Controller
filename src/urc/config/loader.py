@@ -106,9 +106,20 @@ def resolve_config(
     project_path: Path | None = None,
     experiment_path: Path | None = None,
     overrides: dict[str, Any] | None = None,
+    extra_defaults: dict[str, Any] | None = None,
 ) -> UrcConfig:
-    """Resuelve la config final: defaults de la librería -> proyecto -> experimento -> overrides."""
+    """Resuelve la config final: defaults de la librería -> extra_defaults ->
+    proyecto -> experimento -> overrides.
+
+    `extra_defaults` es para casos como `urc eval`: metadatos de un run ya
+    entrenado (bridge/algo usados, ver `core/runs.py`) que deben poder
+    aplicarse sin que el usuario repita la config de `urc train`, pero que un
+    `urc.yaml`/`--set` explícito debe poder seguir sobreescribiendo.
+    """
     merged = _load_defaults()
+
+    if extra_defaults:
+        merged = deep_merge(merged, extra_defaults)
 
     if project_path is not None and project_path.exists():
         merged = deep_merge(merged, load_yaml(project_path))

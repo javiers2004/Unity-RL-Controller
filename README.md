@@ -4,11 +4,12 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
 
-> **Estado actual**: Fases 1-7 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
+> **Estado actual**: Fases 1-8 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
 > verificado contra Unity real, configuración jerárquica, `urc train` de extremo a extremo (PPO o
 > SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`), algoritmos de
-> terceros vía `./plugins/`, y entornos declarados en config con currículo/domain randomization
-> reales (`urc env list/describe/create`). Siguiente: Fase 8 (evaluación y benchmarking).
+> terceros vía `./plugins/`, entornos declarados en config con currículo/domain randomization
+> reales, y `urc eval/compare/record` para evaluar y comparar checkpoints. Siguiente: Fase 9
+> (visualización y observabilidad).
 
 ## Instalación (desarrollo)
 
@@ -58,7 +59,19 @@ urc train --experiment experiments/exp1.yaml --resume runs/default/checkpoint_50
 
 urc algo list                           # nombres disponibles (built-in + plugins en ./plugins/)
 urc algo info sb3-ppo                   # descripción de un algoritmo registrado
+
+urc eval runs/default/checkpoint_50000_steps.zip --episodes 20   # reward medio, éxito, duración
+urc eval runs/default/checkpoint_50000_steps.zip --success-threshold 10   # éxito = reward >= 10
+urc compare runs/default/checkpoint_50000_steps.zip otro/checkpoint.zip   # compara dos evals
+urc compare runs/default                # compara usando el eval más reciente de esa carpeta
+urc record runs/default/checkpoint_50000_steps.zip --episodes 3   # trayectoria a .jsonl
 ```
+
+`urc eval`/`urc record` no necesitan que repitas `--project`/`--set`: `urc train` deja un
+`run_info.json` junto a los checkpoints con el bridge/algoritmo usados, y lo usan automáticamente
+(se puede seguir sobreescribiendo con `--set` si hace falta). `urc record` graba la trayectoria
+(observación/acción/recompensa por paso) en `.jsonl`, no un vídeo de píxeles — ver ROADMAP, Fase 8,
+para el porqué.
 
 Añadir un algoritmo propio no requiere tocar el código de `urc`: basta con dejar un `.py` en
 `./plugins/` del proyecto que registre una clase con `@algorithms.register("mi-algo")` (ver

@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 7)
+> **Última actualización**: 2026-07-04 (Fase 8)
 
 ---
 
@@ -160,11 +160,14 @@ unity-rl-controller/
 ├── ROADMAP.md                 (este documento)
 ├── pyproject.toml
 ├── src/urc/
-│   ├── cli/                   comandos (uno por subcomando)
+│   ├── cli/                   comandos (uno por subcomando) + _shared.py (opciones/carga común)
 │   ├── core/
 │   │   ├── contracts.py       BridgeAdapter, AlgorithmBackend, EnvironmentSpec
 │   │   ├── registry.py        sistema de registro de plugins (register/register_lazy/set)
-│   │   └── environments.py    EnvironmentSpec desde config -> registry (ver Fase 7)
+│   │   ├── environments.py    EnvironmentSpec desde config -> registry (ver Fase 7)
+│   │   ├── evaluation.py      EpisodeResult/EvalResult + run_episodes() (Fase 8)
+│   │   ├── runs.py            run_info.json de un run entrenado (Fase 8)
+│   │   └── jsonutil.py        json_safe(): numpy -> tipos nativos, sin depender de numpy
 │   ├── bridges/
 │   │   ├── mlagents_bridge.py (default, carga perezosa)
 │   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
@@ -404,10 +407,50 @@ planeado ahí no ha hecho falta. Los entornos son datos declarados en YAML (`env
 guardar en una carpeta de plugins — toda la lógica cabe en `core/environments.py`. Se ha eliminado
 la carpeta `envs/` vacía que quedó de la Fase 1.
 
-### Fase 8 — Evaluación y benchmarking
-- [ ] `urc eval` (N episodios, métricas: reward medio, tasa de éxito, duración)
-- [ ] `urc compare` entre runs/checkpoints
-- [ ] `urc record` (vídeo/replay de episodios)
+### Fase 8 — Evaluación y benchmarking ✅
+- [x] `urc eval <checkpoint>`: corre N episodios con la política cargada (reward medio ± std,
+      duración media en pasos, tasa de éxito) y guarda el resultado en `eval_<checkpoint>.json`
+      junto al checkpoint, para que `urc compare` lo pueda leer después.
+- [x] `urc compare <path...>`: acepta un resultado de eval directamente, un checkpoint (busca su
+      `eval_<nombre>.json` hermano) o una carpeta de run (usa el más reciente), y compara
+      reward/éxito/duración en una tabla.
+- [x] `urc record <checkpoint>`: graba la trayectoria (observación/acción/recompensa por paso) de
+      N episodios en un `.jsonl` — ver nota abajo sobre por qué esto y no vídeo de píxeles.
+
+**`run_info.json`, pieza nueva no prevista en el diseño original**: `urc train` ahora deja un
+`run_info.json` junto a los checkpoints (bridge, `bridge_options`, algoritmo, entorno). Sin esto,
+`urc eval`/`urc record` habrían obligado al usuario a repetir `--project`/`--set` con exactamente
+la misma config que usó para entrenar, solo para saber qué bridge/algoritmo reconstruir — un caso
+claro de fricción evitable. `resolve_config` gana un parámetro `extra_defaults` (capa de prioridad
+justo por encima de los defaults de la librería) para que el `run_info.json` se pueda sobreescribir
+con un `--set`/`urc.yaml` explícito si hace falta, en vez de ser inamovible.
+
+**Qué mide "éxito"**: el contrato `BridgeAdapter`/`StepResult` no tiene un campo "éxito" — solo
+`reward`/`done`/`info`. `urc eval` usa, en este orden: (1) `info["success"]` del último paso si el
+entorno lo reporta, (2) si no, `--success-threshold X` (recompensa total del episodio >= X), (3) si
+no hay ninguna de las dos, reporta la tasa de éxito como "N/A" en vez de inventar un criterio.
+
+**`urc record` graba trayectorias, no vídeo de píxeles**: "vídeo/replay" en el checklist original
+sugería captura de vídeo. No se ha hecho así a propósito: nuestro contrato `BridgeAdapter` no
+expone el renderizado de Unity (ni `MLAgentsBridge` ni los demás bridges tienen forma de capturar
+píxeles), así que producir un vídeo real exigiría scripting adicional en el lado de Unity (cámara
+-> archivo) y una dependencia nueva para codificar vídeo (`opencv-python`/`imageio`), ninguna de
+las cuales está en el plan actual. En su lugar, `urc record` guarda un replay estructurado
+(observación/acción/recompensa por paso en `.jsonl`) — genuinamente útil para depurar o analizar
+una política sin tener Unity abierto, aunque no sea "ver" el episodio. Grabar vídeo de verdad queda
+anotado como posible ampliación futura si hace falta, no descartado.
+
+**Verificado manualmente de extremo a extremo** (2026-07-04): entrené un checkpoint diminuto contra
+un servidor `socket` de juguete, corrí `urc eval` sobre él sin pasarle ninguna config (usó
+`run_info.json` solo), comprobé el JSON de resultado guardado, corrí `urc compare` con la ruta del
+checkpoint y con la carpeta del run (ambas formas resuelven al mismo resultado), y `urc record`
+generó un `.jsonl` con una línea por paso. Automatizado después en `tests/test_cli_eval.py`,
+`tests/test_cli_compare.py` y `tests/test_cli_record.py`.
+
+**Ajuste a un fixture de test compartido**: `toy_env_server` (usado desde la Fase 5) solo aceptaba
+una conexión; evaluar/grabar después de entrenar contra el mismo host/puerto necesita una segunda
+conexión al mismo servidor. Se cambió a aceptar conexiones en bucle — más fiel además a cómo se
+comportaría un entorno real, que sigue disponible entre comandos.
 
 ### Fase 9 — Visualización y observabilidad
 - [ ] Integración TensorBoard (default) + Weights&Biases (opcional, configurable)

@@ -6,30 +6,17 @@ import typer
 
 from urc.algorithms import algorithms as algorithm_registry
 from urc.bridges import bridges as bridge_registry
+from urc.cli._shared import EXPERIMENT_OPTION, PROJECT_OPTION, SET_OPTION, get_or_exit
 from urc.config import ConfigError, overrides_to_dict, resolve_config
 from urc.core.environments import resolve_environment
 from urc.core.plugins import load_all_plugins
-
-_PROJECT_OPTION = typer.Option(
-    Path("urc.yaml"), "--project", help="Ruta al YAML de configuración del proyecto."
-)
-_EXPERIMENT_OPTION = typer.Option(
-    None,
-    "--experiment",
-    "-e",
-    help="Ruta a un YAML de experimento a aplicar sobre la config del proyecto.",
-)
-_SET_OPTION = typer.Option(
-    [],
-    "--set",
-    help="Override puntual clave=valor (p. ej. hyperparameters.learning_rate=1e-4). Repetible.",
-)
+from urc.core.runs import write_run_info
 
 
 def train(
-    project: Path = _PROJECT_OPTION,
-    experiment: Path | None = _EXPERIMENT_OPTION,
-    set_: list[str] = _SET_OPTION,
+    project: Path = PROJECT_OPTION,
+    experiment: Path | None = EXPERIMENT_OPTION,
+    set_: list[str] = SET_OPTION,
     resume: Path | None = typer.Option(
         None, "--resume", help="Ruta a un checkpoint desde el que reanudar el entrenamiento."
     ),
@@ -47,17 +34,8 @@ def train(
 
     load_all_plugins()
 
-    try:
-        bridge_cls = bridge_registry.get(config.bridge)
-    except (KeyError, ImportError) as error:
-        typer.echo(str(error), err=True)
-        raise typer.Exit(code=1) from error
-
-    try:
-        algorithm_cls = algorithm_registry.get(config.algo)
-    except (KeyError, ImportError) as error:
-        typer.echo(str(error), err=True)
-        raise typer.Exit(code=1) from error
+    bridge_cls = get_or_exit(bridge_registry, config.bridge)
+    algorithm_cls = get_or_exit(algorithm_registry, config.algo)
 
     environments_config = {name: entry.model_dump() for name, entry in config.environments.items()}
     env_spec = resolve_environment(config.env, environments_config)
@@ -71,6 +49,14 @@ def train(
     typer.echo(f"Checkpoints en: {checkpoint_dir}")
 
     bridge_options = {**config.bridge_options, **env_spec.bridge_options}
+    write_run_info(
+        checkpoint_dir,
+        bridge=config.bridge,
+        bridge_options=bridge_options,
+        algo=config.algo,
+        env=env_spec.name,
+    )
+
     bridge = bridge_cls(**bridge_options)
     algorithm = algorithm_cls()
     try:

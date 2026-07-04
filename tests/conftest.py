@@ -8,8 +8,7 @@ from collections.abc import Iterator
 import pytest
 
 
-def _serve_fixed_length_episodes(server_socket: socket.socket, episode_length: int = 2) -> None:
-    conn, _ = server_socket.accept()
+def _serve_one_client(conn: socket.socket, episode_length: int) -> None:
     with conn:
         reader = conn.makefile("r", encoding="utf-8", newline="\n")
         writer = conn.makefile("w", encoding="utf-8", newline="\n")
@@ -42,14 +41,26 @@ def _serve_fixed_length_episodes(server_socket: socket.socket, episode_length: i
             writer.flush()
 
 
+def _serve_fixed_length_episodes(server_socket: socket.socket, episode_length: int = 2) -> None:
+    # Bucle, no una única conexión: algunos tests conectan más de una vez al
+    # mismo servidor (p. ej. `urc train` y luego `urc eval` contra el mismo
+    # host/puerto), igual que un entorno real seguiría disponible entre comandos.
+    while True:
+        try:
+            conn, _ = server_socket.accept()
+        except OSError:
+            return
+        _serve_one_client(conn, episode_length)
+
+
 @pytest.fixture
 def toy_env_server() -> Iterator[tuple[str, int]]:
     """Servidor TCP de juguete que habla el protocolo JSON-RPC de `SocketBridge`:
-    episodios de longitud 2, observación/acción continuas de tamaño 1. Sirve un
-    único cliente y se cierra solo al final del test."""
+    episodios de longitud 2, observación/acción continuas de tamaño 1. Acepta
+    conexiones sucesivas y se cierra solo al final del test."""
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("127.0.0.1", 0))
-    server_socket.listen(1)
+    server_socket.listen(5)
     host, port = server_socket.getsockname()
 
     thread = threading.Thread(
