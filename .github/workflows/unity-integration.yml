@@ -6,9 +6,8 @@ name: Unity integration
 # (evita vendorizar ml-agents y necesitar una licencia de Unity en CI).
 
 on:
-  # Solo manual por ahora: en cuanto exista el Release con el build headless
-  # (ver ROADMAP.md, Fase 11), cambia esto a "push:"/"pull_request:" como en
-  # ci.yml — así no sale en rojo en cada commit mientras tanto.
+  # Solo manual por ahora: en cuanto esto corra bien un par de veces seguidas,
+  # cambia esto a "push:"/"pull_request:" como en ci.yml.
   workflow_dispatch:
 
 env:
@@ -35,17 +34,19 @@ jobs:
             "https://github.com/${{ github.repository }}/releases/download/${{ env.UNITY_BUILD_RELEASE_TAG }}/${{ env.UNITY_BUILD_ASSET_NAME }}"
           mkdir -p unity_build
           unzip -q build.zip -d unity_build
+          echo "--- Contenido extraído (hasta 3 niveles) ---"
+          find unity_build -maxdepth 3
           # El build se exportó en Windows: el bit de ejecución no sobrevive al
-          # zip, hay que ponerlo a mano.
-          find unity_build -maxdepth 1 -type f -name "*.x86_64" -exec chmod +x {} \;
-
-      - name: Run real Unity smoke test (reset/step against the headless build)
-        run: |
-          BUILD_PATH=$(find unity_build -maxdepth 1 -type f -name "*.x86_64" | head -n1)
-          echo "Usando build: $BUILD_PATH"
-          echo "URC_UNITY_BUILD_PATH=$BUILD_PATH" >> "$GITHUB_ENV"
+          # zip, hay que ponerlo a mano. Sin límite de profundidad, por si el
+          # zip mete todo dentro de una carpeta contenedora.
+          find unity_build -type f -name "*.x86_64" -exec chmod +x {} \;
 
       - name: Run pytest against the real build
-        env:
-          URC_UNITY_BUILD_PATH: ${{ env.URC_UNITY_BUILD_PATH }}
-        run: pytest tests/test_unity_headless_integration.py -v
+        run: |
+          BUILD_PATH=$(find unity_build -type f -name "*.x86_64" | head -n1)
+          echo "Usando build: $BUILD_PATH"
+          if [ -z "$BUILD_PATH" ]; then
+            echo "::error::No se encontró ningún .x86_64 dentro de unity_build/ — revisa la estructura del zip subido al Release."
+            exit 1
+          fi
+          URC_UNITY_BUILD_PATH="$BUILD_PATH" pytest tests/test_unity_headless_integration.py -v
