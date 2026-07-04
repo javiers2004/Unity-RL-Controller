@@ -210,7 +210,7 @@ unity-rl-controller/
 - [x] Implementación *fake/no-op* de cada contrato + tests unitarios sobre los contratos
       (15 tests, incluido un round-trip real contra un subproceso)
 
-### Fase 3 — Bridge por defecto: Unity ML-Agents ✅ (código) / ⏳ (verificación con Unity real)
+### Fase 3 — Bridge por defecto: Unity ML-Agents ✅
 - [x] Wrapper de `mlagents_envs.UnityEnvironment` implementando `BridgeAdapter`
       (`src/urc/bridges/mlagents_bridge.py`, registrado como `"mlagents"`)
 - [x] Soporte modo headless (`no_graphics=True`) + múltiples instancias en paralelo
@@ -218,7 +218,7 @@ unity-rl-controller/
 - [x] Modo "editor" para debug interactivo: `file_name=None` conecta contra el editor
       abierto en vez de lanzar un build
 - [x] `urc env launch` (`--executable`, `--no-graphics`, `--worker-id`, `--seed`, `--timeout`)
-      para lanzar/verificar conexión — **pendiente de probar contra Unity real**, ver nota abajo
+      para lanzar/verificar conexión — **verificado contra Unity real** (ver nota abajo)
 - [x] Segundo bridge mínimo de ejemplo: `SocketBridge` (TCP, `src/urc/bridges/socket_bridge.py`),
       además del `ExternalProcessBridge` de la Fase 2 — ambos comparten protocolo
       (`JsonLineRpcClient`/`JsonLineBridge` en `core/rpc.py`), demostrando que el contrato es
@@ -230,14 +230,22 @@ ML-Agents, como Basic o GridWorld). Si el entorno tiene más de un agente/behavi
 lanza `NotImplementedError` con un mensaje explícito en vez de comportarse de forma incorrecta en
 silencio. Multi-agente queda para cuando el contrato lo necesite explícitamente.
 
-**Gotcha real encontrado**: `mlagents-envs` 0.28.0 (la última en PyPI) trae bindings de protobuf
-generados con una versión antigua; con `protobuf>=3.21` falla al importar. Se fija
+**Gotcha real encontrado #1**: `mlagents-envs` 0.28.0 (la última en PyPI) trae bindings de
+protobuf generados con una versión antigua; con `protobuf>=3.21` falla al importar. Se fija
 `protobuf<3.21` en el extra `mlagents` de `pyproject.toml`.
 
-**Pendiente de verificación real** (requiere Unity instalado, ver nota más abajo): todo lo de
-esta fase está probado con un `UnityEnvironment` falso en los tests (`test_mlagents_bridge.py`),
-pero `urc env launch` todavía no se ha ejecutado contra un Unity de verdad. Es el primer paso a
-hacer en cuanto el usuario tenga Unity + un entorno de ejemplo de ML-Agents disponibles.
+**Gotcha real encontrado #2**: `action_spec()` reportaba `dtype="float32"` para acciones
+discretas (heredado del default del dataclass), cuando internamente ya se construían como
+`int32` para la llamada a `ActionTuple`. Solo se detectó al probar contra Unity real, no lo
+cubría el `UnityEnvironment` falso de los tests — corregido y añadido a la aserción del test.
+
+**Verificado contra Unity real** (2026-07-04): `urc env launch` conectado al editor con la escena
+`Basic.unity` de ML-Agents (Unity 6000.0.77f1) — reportó `Observaciones: shape=(20,)
+dtype=float32` y `Acciones: shape=(1,) dtype=int32 discreto=True`, coincidiendo exactamente con
+la especificación conocida del entorno Basic (observación one-hot de 20 posiciones, 1 acción
+discreta). Instalación usada: Unity Hub 3.19.3 + Unity 6000.0.77f1, proyecto de ejemplo oficial
+clonado de `Unity-Technologies/ml-agents` (carpeta `Project/`, no `DevProject/` ni
+`PerformanceProject/`, que están casi vacíos).
 
 ### Fase 4 — Sistema de configuración
 - [ ] Loader de YAML jerárquico (defaults → proyecto → experimento → CLI)
