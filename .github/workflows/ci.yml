@@ -14,8 +14,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install package (dev + mlagents)
-        run: pip install -e ".[dev,mlagents]"
+      - name: Install package (dev + mlagents + sb3)
+        run: pip install -e ".[dev,all]"
 
       - name: Lint
         run: ruff check .

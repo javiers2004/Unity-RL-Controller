@@ -20,7 +20,13 @@ def _serve_one_client(server_socket: socket.socket) -> None:
             if method == "reset":
                 result: object = {"obs": [0.0]}
             elif method == "step":
-                result = {"observation": {"obs": [1.0]}, "reward": 2.0, "done": True, "info": {}}
+                received_action = request.get("params", {}).get("action")
+                result = {
+                    "observation": {"obs": [1.0]},
+                    "reward": 2.0,
+                    "done": True,
+                    "info": {"received_action": received_action},
+                }
             elif method == "observation_spec":
                 result = {"shape": [1], "dtype": "float32"}
             elif method == "action_spec":
@@ -67,5 +73,27 @@ def test_socket_bridge_round_trips_over_tcp(echo_server: tuple[str, int]):
         assert result.reward == 2.0
         assert result.done is True
         assert result.observation == {"obs": [1.0]}
+    finally:
+        bridge.close()
+
+
+class _FakeNdarray:
+    """Doble mínimo de numpy.ndarray: solo lo que _json_safe necesita (.tolist())."""
+
+    def __init__(self, values: list[float]) -> None:
+        self._values = values
+
+    def tolist(self) -> list[float]:
+        return self._values
+
+
+def test_socket_bridge_serializes_array_like_actions(echo_server: tuple[str, int]):
+    host, port = echo_server
+
+    bridge = SocketBridge(host, port)
+    try:
+        bridge.reset()
+        result = bridge.step(action=_FakeNdarray([0.25, -0.5]))
+        assert result.info["received_action"] == [0.25, -0.5]
     finally:
         bridge.close()

@@ -15,7 +15,7 @@ def test_config_show_prints_resolved_yaml(tmp_path: Path):
 
     assert result.exit_code == 0
     assert "bridge: socket" in result.stdout
-    assert "algo: mlagents-ppo" in result.stdout
+    assert "algo: sb3-ppo" in result.stdout
 
 
 def test_config_show_applies_set_overrides(tmp_path: Path):

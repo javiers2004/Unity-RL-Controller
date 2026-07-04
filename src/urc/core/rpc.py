@@ -13,6 +13,14 @@ class RpcError(RuntimeError):
     """El extremo remoto devolvió un error o no respondió el protocolo esperado."""
 
 
+def _json_safe(value: Any) -> Any:
+    """Convierte arrays/escalares de numpy (frecuentes al venir de SB3 u otras
+    librerías del ecosistema Gym) a tipos nativos serializables en JSON, sin
+    depender de numpy: cualquier objeto con `.tolist()` sirve."""
+    to_list = getattr(value, "tolist", None)
+    return to_list() if callable(to_list) else value
+
+
 class JsonLineRpcClient:
     """Protocolo JSON-RPC minimalista, una petición/respuesta por línea de texto.
 
@@ -91,7 +99,7 @@ class JsonLineBridge(BridgeAdapter):
         return self._rpc.call("reset")
 
     def step(self, action: Any) -> StepResult:
-        result = self._rpc.call("step", {"action": action})
+        result = self._rpc.call("step", {"action": _json_safe(action)})
         return StepResult(
             observation=result["observation"],
             reward=result["reward"],
@@ -105,10 +113,12 @@ class JsonLineBridge(BridgeAdapter):
 
     def action_spec(self) -> ActionSpec:
         spec = self._rpc.call("action_spec")
+        discrete_branches = spec.get("discrete_branches")
         return ActionSpec(
             shape=tuple(spec["shape"]),
             dtype=spec.get("dtype", "float32"),
             discrete=spec.get("discrete", False),
+            discrete_branches=tuple(discrete_branches) if discrete_branches else None,
         )
 
     def close(self) -> None:

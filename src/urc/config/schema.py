@@ -26,8 +26,10 @@ class UrcConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     bridge: str = "mlagents"
-    algo: str = "mlagents-ppo"
+    bridge_options: dict[str, Any] = Field(default_factory=dict)
+    algo: str = "sb3-ppo"
     env: str | None = None
     hyperparameters: dict[str, Any] = Field(default_factory=dict)
     training: TrainingConfig = Field(default_factory=TrainingConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    output_dir: str = "runs"

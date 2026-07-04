@@ -8,12 +8,14 @@ def test_default_config_has_sensible_values():
     config = UrcConfig()
 
     assert config.bridge == "mlagents"
-    assert config.algo == "mlagents-ppo"
+    assert config.bridge_options == {}
+    assert config.algo == "sb3-ppo"
     assert config.env is None
     assert config.hyperparameters == {}
     assert config.training.max_steps == 500_000
     assert config.training.checkpoint_every == 50_000
     assert config.logging.backend == "tensorboard"
+    assert config.output_dir == "runs"
 
 
 def test_unknown_top_level_key_is_rejected():

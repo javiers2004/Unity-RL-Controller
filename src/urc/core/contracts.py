@@ -16,6 +16,11 @@ class ActionSpec:
     shape: tuple[int, ...]
     dtype: str = "float32"
     discrete: bool = False
+    # Cardinalidad de cada rama discreta (p. ej. (3,) = una rama con 3 acciones
+    # posibles). Solo tiene sentido si discrete=True; None en acciones continuas.
+    # Necesario para construir un espacio Gym real (Discrete/MultiDiscrete), no
+    # solo para mostrar la shape como en la Fase 3.
+    discrete_branches: tuple[int, ...] | None = None
 
 
 @dataclass

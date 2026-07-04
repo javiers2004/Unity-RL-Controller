@@ -1,14 +1,19 @@
 # Defaults empaquetados con urc. Cada proyecto/experimento solo necesita
 # describir lo que quiere cambiar respecto a esto (ver ROADMAP.md, sección 5).
 bridge: mlagents
-algo: mlagents-ppo
+bridge_options: {}
+algo: sb3-ppo
 env: null
+# learning_rate y gamma coinciden con los defaults propios de Stable-Baselines3
+# PPO: se listan explícitamente para que se vean con `urc config show`, no
+# porque haga falta forzarlos. batch_size y demás se dejan a los defaults de
+# SB3 en vez de reinventarlos aquí.
 hyperparameters:
   learning_rate: 3.0e-4
   gamma: 0.99
-  batch_size: 1024
 training:
   max_steps: 500000
   checkpoint_every: 50000
 logging:
   backend: tensorboard
+output_dir: runs

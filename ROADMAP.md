@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04
+> **Última actualización**: 2026-07-04 (Fase 5)
 
 ---
 
@@ -19,7 +19,7 @@ Esto aplica a los tres ejes que ya se han decidido:
 | Eje | Por defecto (fácil) | Personalizable |
 |---|---|---|
 | Conexión Unity ↔ código (**Bridge**) | Unity ML-Agents Toolkit (`mlagents_envs`, gRPC ya resuelto) | Cualquier bridge propio (sockets, gRPC custom, shared memory...) que cumpla el contrato |
-| Algoritmo de entrenamiento (**Backend**) | Trainer nativo de ML-Agents (PPO, ya incluido, cero dependencias extra) | Stable-Baselines3, RLlib, o implementación propia |
+| Algoritmo de entrenamiento (**Backend**) | PPO de Stable-Baselines3 (`sb3-ppo`), vía un wrapper Gymnasium sobre el bridge — ver nota de la Fase 5 sobre por qué no es el trainer nativo de ML-Agents | RLlib, implementación propia, o (más adelante) invocar `mlagents-learn` como backend "nativo" |
 | Lenguaje de la CLI/librería | Python | Cualquier lenguaje, vía plugins "out-of-process" con protocolo definido |
 
 Y el propósito del proyecto es **doble**: debe ser cómodo de usar día a día como herramienta de investigación personal, y a la vez estar construido con el rigor (tests, packaging, docs, versionado) de una librería open-source publicable.
@@ -114,8 +114,8 @@ Jerarquía de resolución (cada nivel sobreescribe al anterior):
 Formato: YAML, validado con schema (pydantic o similar) para dar errores claros en vez de tracebacks. Ejemplo ilustrativo:
 
 ```yaml
-bridge: mlagents          # o "custom:mi_bridge.py"
-algo: mlagents-ppo        # o "sb3-ppo", "custom:mi_algo.py"
+bridge: mlagents          # o "socket", "external", "custom:mi_bridge.py"
+algo: sb3-ppo             # o "custom:mi_algo.py"
 env: maze-v1
 hyperparameters:
   learning_rate: 3.0e-4
@@ -165,11 +165,12 @@ unity-rl-controller/
 │   │   ├── contracts.py       BridgeAdapter, AlgorithmBackend, EnvironmentSpec
 │   │   └── registry.py        sistema de registro de plugins
 │   ├── bridges/
-│   │   ├── mlagents_bridge.py (default)
-│   │   └── external_bridge.py (protocolo out-of-process)
+│   │   ├── mlagents_bridge.py (default, carga perezosa)
+│   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
+│   │   └── socket_bridge.py   (protocolo out-of-process, TCP)
 │   ├── algorithms/
-│   │   ├── mlagents_ppo.py    (default)
-│   │   └── sb3_adapter.py
+│   │   ├── sb3_ppo.py         (default: PPO de SB3 vía BridgeGymEnv)
+│   │   └── gym_bridge.py      (BridgeAdapter -> entorno Gymnasium)
 │   ├── envs/                  EnvironmentSpecs registrados + builds de Unity
 │   ├── config/                loader + schema + resolución jerárquica
 │   └── logging/               integraciones tensorboard/wandb/dashboard propio
@@ -274,17 +275,71 @@ que `bridge`/`algo`/`env` existan de verdad en sus registries — esa comprobaci
 resolver/instanciar desde config (Phase 5+), reutilizando el `KeyError` con opciones disponibles
 que ya da `Registry.get()` (Fase 2).
 
-### Fase 5 — CLI mínimo viable de entrenamiento
-- [ ] `urc train` uniendo bridge + config + algoritmo por defecto (PPO nativo de ML-Agents)
-- [ ] Checkpointing a disco + reanudar entrenamiento (`--resume`)
-- [ ] `urc doctor` (diagnóstico de instalación: Unity, Python, GPU, dependencias)
-- [ ] `urc init <nombre>` (scaffolding de proyecto nuevo)
+### Fase 5 — CLI mínimo viable de entrenamiento ✅
+- [x] `urc train` uniendo bridge + config + algoritmo por defecto
+- [x] Checkpointing a disco + reanudar entrenamiento (`--resume`)
+- [x] `urc doctor` (Python, GPU/CUDA, dependencias opcionales instaladas o no)
+- [x] `urc init <nombre>` (scaffolding de proyecto nuevo)
+
+**Pivote importante respecto al borrador inicial**: el algoritmo por defecto ya NO es "el trainer
+nativo de ML-Agents" (`mlagents-learn`), sino **PPO de Stable-Baselines3** (`sb3-ppo`), entrenado a
+través de un wrapper Gymnasium (`BridgeGymEnv`) sobre *cualquier* `BridgeAdapter`. Motivo: el
+trainer nativo de ML-Agents no compone con nuestro contrato — gestiona su propia conexión a Unity
+internamente y no acepta un `BridgeAdapter` externo, así que usarlo como "el default" habría
+significado que la primera vez que se entrena algo, ni siquiera se ejercita la arquitectura de
+bridges que se ha construido en las Fases 2-3. SB3 sobre `BridgeGymEnv` sí funciona con
+*cualquier* bridge (mlagents, socket, subproceso) sin acoplarse a Unity en absoluto — es una
+validación real de que el contrato funciona, no solo un wrapper cosmético. Invocar
+`mlagents-learn` como backend alternativo (para quien quiera self-play/currículo nativos de
+ML-Agents) queda como posibilidad futura, no descartada, solo pospuesta.
+
+**Nuevas piezas de arquitectura que introdujo esta fase** (no estaban en el diseño original):
+- `Registry.register_lazy(nombre, módulo, install_hint=...)`: permite que `bridges.get("mlagents")`
+  o `algorithms.get("sb3-ppo")` importen su módulo bajo demanda la primera vez que se piden de
+  verdad, sin forzar sus dependencias pesadas (grpc/protobuf, torch/gymnasium) a quien no las usa.
+  Si la importación falla, el error incluye el `pip install "urc[...]"` correcto.
+- `BridgeGymEnv` (`src/urc/algorithms/gym_bridge.py`): adapta cualquier `BridgeAdapter` a la
+  interfaz estándar de Gymnasium, para que cualquier librería de ese ecosistema (SB3, RLlib...)
+  pueda entrenar contra él sin saber nada de Unity.
+- `ActionSpec.discrete_branches`: campo nuevo (opcional) en el contrato — la Fase 3 solo
+  reportaba `shape`/`discrete` para mostrarlos en `urc env launch`, pero construir un espacio Gym
+  discreto de verdad (`Discrete(n)` / `MultiDiscrete([...])`) necesita la cardinalidad de cada
+  rama, no solo cuántas ramas hay. Extensión retrocompatible (default `None`).
+- `bridge_options` / `output_dir` en `UrcConfig`: `bridge_options` son los kwargs que se pasan
+  literalmente al constructor del bridge elegido (p. ej. `bridge_options.file_name` para
+  `mlagents`, `bridge_options.host`/`.port` para `socket`) — evita acoplar `urc train` a los
+  parámetros concretos de cada bridge antes de que exista `EnvironmentSpec` completo (Fase 7).
+
+**Tres bugs reales encontrados al probar `urc train` de verdad** (ninguno lo detectaban los tests
+con dobles, porque nunca se había ejercitado el camino completo bridge→Gym→SB3):
+1. `_action_space` construía un `Box(-inf, +inf)` para acciones continuas — SB3 exige límites
+   finitos en el espacio de *acciones* (no en el de observaciones). Arreglado con `[-1, 1]`,
+   la convención habitual de ML-Agents para acciones continuas.
+2. SB3 pasa las acciones como `numpy.ndarray`, que `json.dumps` no sabe serializar — rompía
+   `SocketBridge`/`ExternalProcessBridge` (que hablan JSON por líneas). Arreglado con `_json_safe`
+   en `core/rpc.py`, que usa duck-typing (`hasattr(valor, "tolist")`) para no tener que añadir
+   numpy como dependencia dura de esos dos bridges (su gracia es depender de cero extras).
+3. `Registry.create(name, **kwargs)` (Fase 2) chocaba si el propio plugin tenía un parámetro
+   llamado igual que uno interno — ya arreglado entonces, mencionado aquí porque es la misma
+   categoría de bug (solo se ve entrenando de verdad, no con mocks).
+
+**Verificado manualmente de extremo a extremo** (2026-07-04): `urc train` contra un servidor TCP
+de juguete (bridge `socket`), con hiperparámetros minúsculos para que corra en segundos —
+checkpoints guardados correctamente en disco, y `--resume` continuando el contador de timesteps
+sin reiniciarlo. Automatizado como test en `tests/test_cli_train.py`.
 
 ### Fase 6 — Algoritmos intercambiables
-- [ ] Adapter para Stable-Baselines3 como segundo backend
+> Actualizado tras el pivote de la Fase 5: `sb3-ppo` ya es el backend por defecto (no el
+> "segundo"). Lo que falta aquí es un **segundo backend genuinamente distinto** y el mecanismo
+> para que cualquiera añada el suyo.
+- [ ] Segundo backend real y distinto de PPO/SB3 (candidatos: SAC de SB3 para acciones continuas,
+      o un adapter que invoque `mlagents-learn` como proceso externo para quien quiera
+      self-play/currículo nativos de ML-Agents — decidir cuál al llegar aquí)
 - [ ] Mecanismo para que el usuario registre su propio algoritmo (plugin in-process u out-of-process)
 - [ ] `urc algo list / info`
-- [ ] Gestión de hiperparámetros vía `--set clave=valor` y archivos de hiperparámetros reutilizables
+- [x] ~~Gestión de hiperparámetros vía `--set clave=valor`~~ ya cubierto desde la Fase 4/5
+      (`--set hyperparameters.learning_rate=...`); pendiente solo lo de "archivos de
+      hiperparámetros reutilizables" si hace falta más que YAMLs de experimento sueltos
 
 ### Fase 7 — Entornos y mapas
 - [ ] `EnvironmentSpec` completo: obs/acciones, parámetros del mapa, curriculum

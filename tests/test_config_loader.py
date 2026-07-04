@@ -49,11 +49,10 @@ def test_resolve_config_uses_library_defaults_when_nothing_else_given():
     # a diferencia de UrcConfig() "a pelo" (hyperparameters={}) — por eso no se
     # compara contra UrcConfig() sino contra el contenido esperado de ese YAML.
     assert config.bridge == "mlagents"
-    assert config.algo == "mlagents-ppo"
+    assert config.algo == "sb3-ppo"
     assert config.hyperparameters == {
         "learning_rate": 3.0e-4,
         "gamma": 0.99,
-        "batch_size": 1024,
     }
 
 
@@ -71,11 +70,9 @@ def test_resolve_config_layers_project_then_experiment_then_overrides(tmp_path: 
     )
 
     assert config.bridge == "socket"
-    # batch_size sigue viniendo de los defaults: nadie lo ha sobreescrito.
     assert config.hyperparameters == {
         "learning_rate": 0.0005,
         "gamma": 0.95,
-        "batch_size": 1024,
     }
 
 

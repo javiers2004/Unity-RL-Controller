@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 from typing import Generic, TypeVar
 
 from urc.core.contracts import AlgorithmBackend, BridgeAdapter, EnvironmentSpec
@@ -13,6 +14,7 @@ class Registry(Generic[T]):
     def __init__(self, kind: str) -> None:
         self._kind = kind
         self._items: dict[str, T] = {}
+        self._lazy_modules: dict[str, tuple[str, str]] = {}
 
     def register(self, name: str, value: T | None = None):
         if value is not None:
@@ -25,12 +27,28 @@ class Registry(Generic[T]):
 
         return decorator
 
+    def register_lazy(self, name: str, module: str, *, install_hint: str) -> None:
+        """Declara que `name` existe pero su módulo (con dependencias opcionales
+        pesadas) solo se importa la primera vez que se pide de verdad con `get`.
+        `install_hint` es lo que se sugiere al usuario si esa importación falla."""
+        self._lazy_modules[name] = (module, install_hint)
+
     def _add(self, name: str, value: T) -> None:
         if name in self._items:
             raise ValueError(f"Ya hay un/a {self._kind} registrado/a con el nombre '{name}'")
         self._items[name] = value
 
     def get(self, name: str) -> T:
+        if name not in self._items and name in self._lazy_modules:
+            module_name, install_hint = self._lazy_modules[name]
+            try:
+                importlib.import_module(module_name)
+            except ImportError as error:
+                raise ImportError(
+                    f"{self._kind} '{name}' necesita una dependencia opcional no instalada. "
+                    f"Instálala con: {install_hint}"
+                ) from error
+
         try:
             return self._items[name]
         except KeyError:
@@ -41,7 +59,7 @@ class Registry(Generic[T]):
         return self.get(name)(*args, **kwargs)
 
     def names(self) -> list[str]:
-        return sorted(self._items)
+        return sorted(set(self._items) | set(self._lazy_modules))
 
 
 bridges: Registry[type[BridgeAdapter]] = Registry("bridge")

@@ -152,6 +152,7 @@ def test_discrete_action_spec_is_reported_correctly(monkeypatch: pytest.MonkeyPa
         assert action_spec.discrete is True
         assert action_spec.shape == (2,)
         assert action_spec.dtype == "int32"
+        assert action_spec.discrete_branches == (3, 4)
     finally:
         created.close()
 

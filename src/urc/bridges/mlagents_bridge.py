@@ -81,7 +81,12 @@ class MLAgentsBridge(BridgeAdapter):
     def action_spec(self) -> ActionSpec:
         spec = self._env.behavior_specs[self._only_behavior_name()].action_spec
         if spec.is_discrete():
-            return ActionSpec(shape=(spec.discrete_size,), dtype="int32", discrete=True)
+            return ActionSpec(
+                shape=(spec.discrete_size,),
+                dtype="int32",
+                discrete=True,
+                discrete_branches=tuple(spec.discrete_branches),
+            )
         return ActionSpec(shape=(spec.continuous_size,), discrete=False)
 
     def close(self) -> None:
