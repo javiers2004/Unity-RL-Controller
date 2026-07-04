@@ -180,14 +180,14 @@ unity-rl-controller/
 - [ ] Redactar el contrato (interfaz) exacto de `BridgeAdapter`, `AlgorithmBackend`, `EnvironmentSpec`
 - [ ] Elegir gestor de entorno/paquetes Python (`uv` recomendado, o `poetry`/`venv+pip`)
 
-### Fase 1 — Esqueleto del repositorio
-- [ ] `git init` + primer commit
-- [ ] Estructura de carpetas (`src/` layout) según sección 7
-- [ ] `pyproject.toml` con metadata, dependencias base, entry point del CLI
-- [ ] Instalación editable (`pip install -e .`) funcionando
-- [ ] Linter/formatter (`ruff`) + pre-commit hooks
-- [ ] CI básico (lint + tests en cada push)
-- [ ] README corto que enlaza a este ROADMAP
+### Fase 1 — Esqueleto del repositorio ✅
+- [x] `git init` + primer commit
+- [x] Estructura de carpetas (`src/` layout) según sección 7
+- [x] `pyproject.toml` con metadata, dependencias base, entry point del CLI
+- [x] Instalación editable (`pip install -e .`) funcionando
+- [x] Linter/formatter (`ruff`) + pre-commit hooks
+- [x] CI básico (lint + tests en cada push)
+- [x] README corto que enlaza a este ROADMAP
 
 ### Fase 2 — Contratos y sistema de plugins
 - [ ] Clases base abstractas: `BridgeAdapter`, `AlgorithmBackend`, `EnvironmentSpec`
