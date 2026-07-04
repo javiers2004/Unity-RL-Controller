@@ -12,6 +12,7 @@ from urc.cli.eval import eval_command
 from urc.cli.init import init as init_command
 from urc.cli.record import record as record_command
 from urc.cli.train import train as train_command
+from urc.cli.visualize import visualize as visualize_command
 
 # En Windows la consola no siempre usa UTF-8 por defecto, lo que corrompe
 # acentos y el guion largo en la ayuda del CLI. Se fuerza aquí para que
@@ -37,6 +38,7 @@ app.command("train")(train_command)
 app.command("eval")(eval_command)
 app.command("compare")(compare_command)
 app.command("record")(record_command)
+app.command("visualize")(visualize_command)
 app.command("doctor")(doctor_command)
 app.command("init")(init_command)
 

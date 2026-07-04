@@ -61,6 +61,9 @@ def train(
     algorithm = algorithm_cls()
     try:
         algorithm.train(bridge, env_spec, config_dict)
+    except ImportError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
     finally:
         bridge.close()
 

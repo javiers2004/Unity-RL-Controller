@@ -2,7 +2,7 @@
 
 > **Qué es este documento**: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (`- [ ]`) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con `[DECISIÓN PENDIENTE]`.
 >
-> **Última actualización**: 2026-07-04 (Fase 8)
+> **Última actualización**: 2026-07-04 (Fase 9)
 
 ---
 
@@ -173,13 +173,12 @@ unity-rl-controller/
 │   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
 │   │   └── socket_bridge.py   (protocolo out-of-process, TCP)
 │   ├── algorithms/
-│   │   ├── sb3_base.py        (SB3Backend: mecánica común a los backends de SB3)
+│   │   ├── sb3_base.py        (SB3Backend + _build_logging: tensorboard/wandb, ver Fase 9)
 │   │   ├── sb3_ppo.py         (default: PPO, admite acciones discretas y continuas)
 │   │   ├── sb3_sac.py         (alternativa: SAC, solo acciones continuas)
 │   │   ├── gym_bridge.py      (BridgeAdapter -> entorno Gymnasium)
 │   │   └── curriculum.py      (CurriculumCallback para SB3)
-│   ├── config/                loader + schema + resolución jerárquica
-│   └── logging/               integraciones tensorboard/wandb/dashboard propio (Fase 9, aún vacío)
+│   └── config/                loader + schema + resolución jerárquica
 ├── unity/                     proyecto(s) de Unity con las escenas/mapas
 ├── examples/                  proyectos de ejemplo end-to-end
 ├── docs/                      documentación pública (mkdocs)
@@ -452,10 +451,47 @@ una conexión; evaluar/grabar después de entrenar contra el mismo host/puerto n
 conexión al mismo servidor. Se cambió a aceptar conexiones en bucle — más fiel además a cómo se
 comportaría un entorno real, que sigue disponible entre comandos.
 
-### Fase 9 — Visualización y observabilidad
-- [ ] Integración TensorBoard (default) + Weights&Biases (opcional, configurable)
-- [ ] `urc visualize` (levanta el dashboard configurado)
-- [ ] Modo "live view" para observar al agente entrenando en tiempo real
+### Fase 9 — Visualización y observabilidad ✅
+- [x] Integración TensorBoard (default): `SB3Backend.train` pasa `tensorboard_log` a SB3 cuando
+      `logging.backend == "tensorboard"` (el default) — SB3 ya sabe escribir ahí solo, no hubo que
+      construir nada de logging desde cero. `logging.backend == "none"` lo desactiva.
+- [x] Weights&Biases (opcional, vía extra `wandb`): `logging.backend == "wandb"` inicializa un run
+      de wandb con `sync_tensorboard=True` (por eso también activa `tensorboard_log`, es como está
+      pensada la propia integración oficial de wandb con SB3) y añade su `WandbCallback`. Probado
+      de verdad con `WANDB_MODE=disabled` (sin red ni credenciales) — cablea correctamente, aunque
+      el dashboard real de wandb.ai no se puede verificar en este entorno.
+- [x] `urc visualize [logdir]`: lanza TensorBoard (vía su API embebible, `tensorboard.program`) y
+      devuelve la URL, igual que el comando `tensorboard --logdir ...` de siempre.
+- [x] "Live view" — implementado con tres piezas reales, no una sola "gran" funcionalidad nueva:
+  1. **Barra de progreso en terminal**: `training.progress_bar: true` (nuevo campo, default
+     `false` para no ensuciar salida no interactiva/CI) activa `progress_bar=True` de SB3
+     (tqdm/rich), ya verificado con un entrenamiento real.
+  2. **Dashboard en vivo**: `urc visualize` mientras `urc train` corre en otra terminal ya
+     actualiza los gráficos en tiempo real — es como funciona TensorBoard normalmente, no hace
+     falta nada especial de nuestra parte.
+  3. **Ver al agente de verdad**: con el bridge `mlagents` conectado al editor de Unity (sin
+     `--no-graphics`), el usuario ya ve al agente entrenando en la ventana del editor mientras
+     `urc train` corre — otra vez, gratis por cómo funciona ML-Agents, no requiere código nuevo.
+
+**Por qué no una sola función "live view"**: streaming de vídeo genérico desde cualquier bridge
+habría sido mucho esfuerzo (captura de píxeles, codificación, transporte) para duplicar algo que
+ML-Agents y TensorBoard ya resuelven mejor cada uno en su terreno. Documentar cómo combinarlos era
+más valioso que construir una alternativa propia peor.
+
+**Verificado manualmente de extremo a extremo** (2026-07-04): entrené con `logging.backend:
+tensorboard` (default) y `training.progress_bar: true` contra un servidor `socket` de juguete —
+la barra de progreso se vio en la terminal, y aparecieron archivos `events.out.tfevents.*` reales
+bajo `runs/default/tensorboard/`. Lancé `_launch_tensorboard` contra esos logs reales y comprobé
+con una petición HTTP real que el dashboard respondía (200 OK). Probé también el wiring de wandb
+con `WANDB_MODE=disabled`. Automatizado después en `tests/test_sb3_logging.py` y
+`tests/test_cli_visualize.py`.
+
+**Ajuste a la estructura de repositorio propuesta (sección 7)**: igual que `envs/` en la Fase 7, la
+carpeta `logging/` planeada ahí tampoco ha hecho falta. El logging de TensorBoard/wandb se apoya en
+mecanismos ya integrados en el propio bucle de entrenamiento de SB3 (`tensorboard_log`,
+`WandbCallback`), así que vive junto a `SB3Backend` en `algorithms/sb3_base.py` — es lógica
+específica de SB3, no algo agnóstico de algoritmo que mereciera su propio paquete. Se ha eliminado
+la carpeta `logging/` vacía que quedó de la Fase 1.
 
 ### Fase 10 — Extensibilidad multi-lenguaje real
 - [ ] Especificación formal (protobuf/JSON schema) del protocolo out-of-process

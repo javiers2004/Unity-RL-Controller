@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
 from urc.algorithms.curriculum import CurriculumCallback
 from urc.algorithms.gym_bridge import BridgeGymEnv
@@ -18,6 +18,40 @@ class SB3Policy(Policy):
     def predict(self, observation: Any) -> Any:
         action, _ = self._model.predict(observation, deterministic=True)
         return action
+
+
+def _build_logging(
+    logging_config: dict[str, Any], hyperparameters: dict[str, Any], checkpoint_dir: str | None
+) -> tuple[str | None, list[BaseCallback]]:
+    """Decide el `tensorboard_log` a pasar a SB3 y los callbacks extra de logging.
+
+    `wandb` se apoya en los mismos logs de TensorBoard (`sync_tensorboard=True`
+    en su propia integración con SB3), así que también activa `tensorboard_log`.
+    """
+    backend = logging_config.get("backend", "none")
+    tensorboard_log = None
+    if backend in ("tensorboard", "wandb") and checkpoint_dir:
+        tensorboard_log = str(Path(checkpoint_dir) / "tensorboard")
+
+    callbacks: list[BaseCallback] = []
+    if backend == "wandb":
+        try:
+            import wandb
+            from wandb.integration.sb3 import WandbCallback
+        except ImportError as error:
+            raise ImportError(
+                'logging.backend "wandb" necesita el extra "wandb" instalado: '
+                'pip install "urc[wandb]"'
+            ) from error
+
+        wandb.init(
+            project=logging_config.get("project", "urc"),
+            sync_tensorboard=True,
+            config=hyperparameters,
+        )
+        callbacks.append(WandbCallback())
+
+    return tensorboard_log, callbacks
 
 
 class SB3Backend(AlgorithmBackend):
@@ -44,17 +78,23 @@ class SB3Backend(AlgorithmBackend):
         hyperparameters = dict(config.get("hyperparameters", {}))
         training = config.get("training", {})
         resume_from = config.get("resume_from")
+        checkpoint_dir = config.get("checkpoint_dir")
+
+        tensorboard_log, logging_callbacks = _build_logging(
+            config.get("logging", {}), hyperparameters, checkpoint_dir
+        )
 
         if resume_from:
-            model = self.algorithm_cls.load(resume_from, env=env)
+            model = self.algorithm_cls.load(resume_from, env=env, tensorboard_log=tensorboard_log)
             reset_num_timesteps = False
         else:
-            model = self.algorithm_cls(self.policy_name, env, **hyperparameters)
+            model = self.algorithm_cls(
+                self.policy_name, env, tensorboard_log=tensorboard_log, **hyperparameters
+            )
             reset_num_timesteps = True
 
-        callbacks = []
+        callbacks = list(logging_callbacks)
         checkpoint_every = training.get("checkpoint_every")
-        checkpoint_dir = config.get("checkpoint_dir")
         if checkpoint_every and checkpoint_dir:
             Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
             callbacks.append(
@@ -71,6 +111,7 @@ class SB3Backend(AlgorithmBackend):
             total_timesteps=training.get("max_steps", 500_000),
             callback=callbacks or None,
             reset_num_timesteps=reset_num_timesteps,
+            progress_bar=training.get("progress_bar", False),
         )
         return SB3Policy(model)
 

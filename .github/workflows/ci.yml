@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install package (dev + mlagents + sb3)
+      - name: Install package (dev + mlagents + sb3 + wandb)
         run: pip install -e ".[dev,all]"
 
       - name: Lint

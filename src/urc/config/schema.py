@@ -10,12 +10,18 @@ class TrainingConfig(BaseModel):
 
     max_steps: int = 500_000
     checkpoint_every: int = 50_000
+    # Barra de progreso en vivo en la terminal (SB3, vía tqdm/rich). False por
+    # defecto: coincide con el propio default de SB3 y evita ruido si la
+    # salida no es una terminal interactiva (CI, logs redirigidos a archivo).
+    progress_bar: bool = False
 
 
 class LoggingConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     backend: Literal["tensorboard", "wandb", "none"] = "tensorboard"
+    # Nombre de proyecto para backends que lo necesitan (wandb.init(project=...)).
+    project: str = "urc"
 
 
 class LessonConfig(BaseModel):

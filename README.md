@@ -4,12 +4,12 @@ Librería + CLI para controlar entrenamientos de Reinforcement Learning en Unity
 
 El diseño completo y el plan de desarrollo por fases están en [ROADMAP.md](ROADMAP.md).
 
-> **Estado actual**: Fases 1-8 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
+> **Estado actual**: Fases 1-9 completadas: esqueleto, contratos/plugins, bridge de ML-Agents
 > verificado contra Unity real, configuración jerárquica, `urc train` de extremo a extremo (PPO o
 > SAC de Stable-Baselines3 sobre cualquier bridge, checkpointing y `--resume`), algoritmos de
 > terceros vía `./plugins/`, entornos declarados en config con currículo/domain randomization
-> reales, y `urc eval/compare/record` para evaluar y comparar checkpoints. Siguiente: Fase 9
-> (visualización y observabilidad).
+> reales, `urc eval/compare/record` para evaluar checkpoints, y TensorBoard/wandb + `urc visualize`
+> con barra de progreso en vivo. Siguiente: Fase 10 (extensibilidad multi-lenguaje real).
 
 ## Instalación (desarrollo)
 
@@ -27,7 +27,8 @@ de MB). `all` instala ambos:
 ```bash
 pip install -e ".[dev,all]"       # todo (recomendado para desarrollo)
 pip install -e ".[dev,mlagents]"  # solo el bridge de Unity
-pip install -e ".[dev,sb3]"       # solo el algoritmo de entrenamiento
+pip install -e ".[dev,sb3]"       # entrenamiento + TensorBoard + barra de progreso
+pip install -e ".[dev,wandb]"     # + Weights&Biases (opcional, necesita cuenta/API key)
 ```
 
 ## Uso
@@ -65,6 +66,10 @@ urc eval runs/default/checkpoint_50000_steps.zip --success-threshold 10   # éxi
 urc compare runs/default/checkpoint_50000_steps.zip otro/checkpoint.zip   # compara dos evals
 urc compare runs/default                # compara usando el eval más reciente de esa carpeta
 urc record runs/default/checkpoint_50000_steps.zip --episodes 3   # trayectoria a .jsonl
+
+urc visualize                           # TensorBoard sobre runs/ (o la carpeta que le pases)
+urc train --set training.progress_bar=true   # barra de progreso en vivo en la terminal
+urc train --set logging.backend=wandb --set logging.project=mi-proyecto   # Weights&Biases
 ```
 
 `urc eval`/`urc record` no necesitan que repitas `--project`/`--set`: `urc train` deja un
@@ -72,6 +77,11 @@ urc record runs/default/checkpoint_50000_steps.zip --episodes 3   # trayectoria 
 (se puede seguir sobreescribiendo con `--set` si hace falta). `urc record` graba la trayectoria
 (observación/acción/recompensa por paso) en `.jsonl`, no un vídeo de píxeles — ver ROADMAP, Fase 8,
 para el porqué.
+
+Para ver al agente entrenando en tiempo real no hace falta nada especial: conecta `urc train` al
+editor de Unity (bridge `mlagents`, sin `--no-graphics`) y verás la escena normal en la ventana del
+editor mientras entrena; y `urc visualize` corriendo en otra terminal actualiza los gráficos de
+TensorBoard en vivo mientras el entrenamiento avanza.
 
 Añadir un algoritmo propio no requiere tocar el código de `urc`: basta con dejar un `.py` en
 `./plugins/` del proyecto que registre una clase con `@algorithms.register("mi-algo")` (ver

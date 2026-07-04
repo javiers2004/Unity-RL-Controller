@@ -14,7 +14,9 @@ def test_default_config_has_sensible_values():
     assert config.hyperparameters == {}
     assert config.training.max_steps == 500_000
     assert config.training.checkpoint_every == 50_000
+    assert config.training.progress_bar is False
     assert config.logging.backend == "tensorboard"
+    assert config.logging.project == "urc"
     assert config.output_dir == "runs"
 
 

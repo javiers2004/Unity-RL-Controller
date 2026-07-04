@@ -14,6 +14,8 @@ hyperparameters:
 training:
   max_steps: 500000
   checkpoint_every: 50000
+  progress_bar: false
 logging:
   backend: tensorboard
+  project: urc
 output_dir: runs

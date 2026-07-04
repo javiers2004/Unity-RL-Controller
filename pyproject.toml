@@ -34,9 +34,15 @@ mlagents = [
 sb3 = [
     "stable-baselines3>=2.0",
     "gymnasium>=0.29",
+    "tensorboard>=2.14",
+    "tqdm>=4.65",
+    "rich>=13.0",
+]
+wandb = [
+    "wandb>=0.16",
 ]
 all = [
-    "urc[mlagents,sb3]",
+    "urc[mlagents,sb3,wandb]",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -59,4 +65,10 @@ filterwarnings = [
     # mlagents-envs 0.28.0 usa una API de protobuf ya deprecada (ver pin de
     # protobuf<3.21 más arriba); no es un problema de nuestro código.
     "ignore::DeprecationWarning:mlagents_envs.*",
+    # tqdm avisa de que su integración con rich (usada por progress_bar=True
+    # de SB3) es experimental; es ruido de esas dos librerías, no nuestro.
+    "ignore::tqdm.std.TqdmExperimentalWarning",
+    # html5lib (vendorizado dentro de TensorBoard, vía bleach) avisa de que su
+    # propio sanitizer está deprecado; no es algo que dependa de nuestro código.
+    "ignore:html5lib's sanitizer is deprecated:DeprecationWarning",
 ]
