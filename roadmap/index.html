@@ -1,0 +1,2121 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Controla entrenamientos de Reinforcement Learning en Unity desde la terminal.">
+      
+      
+      
+      
+        <link rel="prev" href="../tutorials/curriculum/">
+      
+      
+        <link rel="next" href="../protocol/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Diseño y roadmap - Unity RL Controller (urc)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#unity-rl-controller-roadmap-y-diseno" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="Unity RL Controller (urc)" class="md-header__button md-logo" aria-label="Unity RL Controller (urc)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Unity RL Controller (urc)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Diseño y roadmap
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/javiers2004/Unity-RL-Controller" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    javiers2004/Unity-RL-Controller
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Unity RL Controller (urc)" class="md-nav__button md-logo" aria-label="Unity RL Controller (urc)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Unity RL Controller (urc)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/javiers2004/Unity-RL-Controller" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    javiers2004/Unity-RL-Controller
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía rápida
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia de comandos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutoriales
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutoriales
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/write-a-bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Escribir un bridge en otro lenguaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/write-an-algorithm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Escribir un algoritmo propio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/curriculum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Currículo y domain randomization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diseño y roadmap
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diseño y roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Visión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-principios-de-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Principios de diseño
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-glosario-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Glosario rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-arquitectura-de-alto-nivel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Arquitectura de alto nivel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Arquitectura de alto nivel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-contratos-minimos-implementados-en-fase-2-srcurccorecontractspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Contratos mínimos ✅ (implementados en Fase 2, src/urc/core/contracts.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Sistema de configuración
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-diseno-de-la-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Diseño de la CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-estructura-de-repositorio-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Estructura de repositorio propuesta
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-pipeline-de-desarrollo-por-fases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Pipeline de desarrollo por fases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Pipeline de desarrollo por fases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-0-fundamentos-y-decisiones-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 0 — Fundamentos y decisiones base
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-esqueleto-del-repositorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1 — Esqueleto del repositorio ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-contratos-y-sistema-de-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2 — Contratos y sistema de plugins ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-bridge-por-defecto-unity-ml-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3 — Bridge por defecto: Unity ML-Agents ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4 — Sistema de configuración ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-5-cli-minimo-viable-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 5 — CLI mínimo viable de entrenamiento ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-6-algoritmos-intercambiables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 6 — Algoritmos intercambiables ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-7-entornos-y-mapas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 7 — Entornos y mapas ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-8-evaluacion-y-benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 8 — Evaluación y benchmarking ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-9-visualizacion-y-observabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 9 — Visualización y observabilidad ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-10-extensibilidad-multi-lenguaje-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 10 — Extensibilidad multi-lenguaje real ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-11-calidad-empaquetado-y-publicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 11 — Calidad, empaquetado y publicación ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-12-pulido-final-y-comunidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 12 — Pulido final y comunidad ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-consideraciones-transversales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Consideraciones transversales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-decisiones-pendientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Decisiones pendientes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-proximos-pasos-inmediatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Próximos pasos inmediatos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo out-of-process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Visión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-principios-de-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Principios de diseño
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-glosario-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Glosario rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-arquitectura-de-alto-nivel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Arquitectura de alto nivel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Arquitectura de alto nivel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-contratos-minimos-implementados-en-fase-2-srcurccorecontractspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Contratos mínimos ✅ (implementados en Fase 2, src/urc/core/contracts.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Sistema de configuración
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-diseno-de-la-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Diseño de la CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-estructura-de-repositorio-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Estructura de repositorio propuesta
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-pipeline-de-desarrollo-por-fases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Pipeline de desarrollo por fases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Pipeline de desarrollo por fases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-0-fundamentos-y-decisiones-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 0 — Fundamentos y decisiones base
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-esqueleto-del-repositorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1 — Esqueleto del repositorio ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-contratos-y-sistema-de-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2 — Contratos y sistema de plugins ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-bridge-por-defecto-unity-ml-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3 — Bridge por defecto: Unity ML-Agents ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4 — Sistema de configuración ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-5-cli-minimo-viable-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 5 — CLI mínimo viable de entrenamiento ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-6-algoritmos-intercambiables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 6 — Algoritmos intercambiables ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-7-entornos-y-mapas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 7 — Entornos y mapas ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-8-evaluacion-y-benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 8 — Evaluación y benchmarking ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-9-visualizacion-y-observabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 9 — Visualización y observabilidad ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-10-extensibilidad-multi-lenguaje-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 10 — Extensibilidad multi-lenguaje real ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-11-calidad-empaquetado-y-publicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 11 — Calidad, empaquetado y publicación ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-12-pulido-final-y-comunidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 12 — Pulido final y comunidad ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-consideraciones-transversales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Consideraciones transversales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-decisiones-pendientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Decisiones pendientes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-proximos-pasos-inmediatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Próximos pasos inmediatos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="unity-rl-controller-roadmap-y-diseno">Unity-RL-Controller — Roadmap y diseño<a class="headerlink" href="#unity-rl-controller-roadmap-y-diseno" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Qué es este documento</strong>: la especificación completa del proyecto, dividida en fases secuenciales (pipeline). Es un documento vivo: cada fase tiene una lista de tareas con checkboxes (<code>- [ ]</code>) que se van marcando conforme se completan. Las decisiones aún no cerradas están marcadas con <code>[DECISIÓN PENDIENTE]</code>.</p>
+<p><strong>Última actualización</strong>: 2026-07-04 (Fase 12 completada — todas las fases planificadas hechas)</p>
+</blockquote>
+<hr />
+<h2 id="1-vision">1. Visión<a class="headerlink" href="#1-vision" title="Permanent link">&para;</a></h2>
+<p>Hoy, conectar Unity con código de Reinforcement Learning (crear el mapa, definir observaciones/acciones, levantar el entrenamiento, ajustar hiperparámetros, evaluar, visualizar resultados) es posible pero <strong>cuesta mucho integrar</strong> cada pieza por separado.</p>
+<p>El objetivo de este proyecto es construir una <strong>librería + CLI</strong> que convierta todo ese proceso en comandos simples de terminal, sin sacrificar la posibilidad de personalizar cualquier pieza del sistema. Idea central en una frase:</p>
+<blockquote>
+<p><strong>Todo tiene un valor por defecto que funciona sin configurar nada, y todo se puede reemplazar sin tocar el core.</strong></p>
+</blockquote>
+<p>Esto aplica a los tres ejes que ya se han decidido:</p>
+<table>
+<thead>
+<tr>
+<th>Eje</th>
+<th>Por defecto (fácil)</th>
+<th>Personalizable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conexión Unity ↔ código (<strong>Bridge</strong>)</td>
+<td>Unity ML-Agents Toolkit (<code>mlagents_envs</code>, gRPC ya resuelto)</td>
+<td>Cualquier bridge propio (sockets, gRPC custom, shared memory...) que cumpla el contrato</td>
+</tr>
+<tr>
+<td>Algoritmo de entrenamiento (<strong>Backend</strong>)</td>
+<td>PPO de Stable-Baselines3 (<code>sb3-ppo</code>), vía un wrapper Gymnasium sobre el bridge — ver nota de la Fase 5 sobre por qué no es el trainer nativo de ML-Agents</td>
+<td>RLlib, implementación propia, o (más adelante) invocar <code>mlagents-learn</code> como backend "nativo"</td>
+</tr>
+<tr>
+<td>Lenguaje de la CLI/librería</td>
+<td>Python</td>
+<td>Cualquier lenguaje, vía plugins "out-of-process" con protocolo definido</td>
+</tr>
+</tbody>
+</table>
+<p>Y el propósito del proyecto es <strong>doble</strong>: debe ser cómodo de usar día a día como herramienta de investigación personal, y a la vez estar construido con el rigor (tests, packaging, docs, versionado) de una librería open-source publicable.</p>
+<hr />
+<h2 id="2-principios-de-diseno">2. Principios de diseño<a class="headerlink" href="#2-principios-de-diseno" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Contrato antes que implementación.</strong> Cada pieza reemplazable (bridge, algoritmo, entorno) se define primero como una interfaz mínima. La implementación por defecto es solo "una implementación más" de esa interfaz.</li>
+<li><strong>Todo es plugin.</strong> Bridges, algoritmos, entornos/mapas y hasta partes del propio CLI se registran en un <em>registry</em> central bajo un nombre, y se seleccionan por config o por flag de CLI (<code>--bridge</code>, <code>--algo</code>, <code>--env</code>).</li>
+<li><strong>Config por encima de código.</strong> El comportamiento de un experimento (qué bridge, qué algoritmo, qué hiperparámetros, qué mapa) se debe poder describir entero en un archivo de config versionable, no en código Python disperso.</li>
+<li><strong>CLI como superficie única de control.</strong> Si algo se puede hacer con la librería, se debe poder hacer con un comando. La API de Python es la base; el CLI es una capa fina encima.</li>
+<li><strong>Cero fricción para empezar, sin techo para crecer.</strong> <code>urc init</code> + <code>urc train</code> deben funcionar en minutos con los defaults. Pero un usuario avanzado debe poder sustituir cualquier pieza sin forkear el proyecto.</li>
+<li><strong>Multi-lenguaje real, no solo de palabra.</strong> La forma de lograr "personalizable a cualquier lenguaje" es definir un protocolo neutral (stdin/stdout + JSON-RPC, o gRPC) para plugins "out-of-process", además del camino rápido in-process en Python.</li>
+</ol>
+<hr />
+<h2 id="3-glosario-rapido">3. Glosario rápido<a class="headerlink" href="#3-glosario-rapido" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Bridge</strong>: componente que habla con Unity (lanza el build, intercambia observaciones/acciones/recompensas). Hoy en día el <code>UnityEnvironment</code> de ML-Agents es el bridge de referencia.</li>
+<li><strong>Backend / Algoritmo</strong>: implementación del algoritmo de RL (PPO, SAC, etc.) que consume lo que da el Bridge y produce una política entrenada.</li>
+<li><strong>EnvironmentSpec</strong>: metadatos de un mapa/escena de Unity: espacio de observación, espacio de acción, parámetros configurables del mapa, curriculum, etc.</li>
+<li><strong>Registry</strong>: tabla interna que mapea un nombre (<code>"mlagents"</code>, <code>"sb3-ppo"</code>, <code>"maze-v1"</code>) a una clase/plugin concreto.</li>
+<li><strong>Plugin in-process</strong>: código Python que implementa directamente la interfaz (rápido, mismo proceso).</li>
+<li><strong>Plugin out-of-process</strong>: proceso externo (en cualquier lenguaje) que habla el protocolo definido por el contrato vía stdio/gRPC (para el caso "quiero mi propio lenguaje").</li>
+<li><strong>Run / Experimento</strong>: una ejecución concreta de entrenamiento, con su config, checkpoints, logs y métricas asociadas.</li>
+</ul>
+<hr />
+<h2 id="4-arquitectura-de-alto-nivel">4. Arquitectura de alto nivel<a class="headerlink" href="#4-arquitectura-de-alto-nivel" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>                          ┌───────────────────────────┐
+                          │            CLI            │  urc train / eval / visualize ...
+                          └─────────────┬─────────────┘
+                                        │
+                          ┌─────────────▼─────────────┐
+                          │      Config resuelta       │  defaults + proyecto + experimento + overrides CLI
+                          └─────────────┬─────────────┘
+                                        │
+        ┌───────────────────┬──────────┼──────────┬───────────────────┐
+        ▼                   ▼          ▼          ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐   ┌───────────────────┐
+│ Bridge Registry│   │ Algo Registry │   │ Env Registry  │   │ Logging/Viz Registry│
+│  (mlagents,    │   │ (mlagents-ppo,│   │ (mapas Unity, │   │ (tensorboard, wandb,│
+│   custom...)   │   │  sb3, custom) │   │  procedurales)│   │  dashboard propio)  │
+└───────┬───────┘   └───────┬───────┘   └───────┬───────┘   └──────────┬─────────┘
+        │                   │                   │                      │
+        └─────────┬─────────┴─────────┬─────────┘                      │
+                   ▼                   ▼                                │
+           ┌───────────────────────────────────┐                       │
+           │           Training Loop            │───────────────────────┘
+           │  (orquesta bridge + algo + env)    │
+           └─────────────────┬───────────────────┘
+                             ▼
+                  ┌─────────────────────┐
+                  │  Runs / Checkpoints  │
+                  └─────────────────────┘
+</code></pre></div>
+<p>Cada caja con "Registry" es un punto de extensión: acepta implementaciones in-process (Python) u out-of-process (cualquier lenguaje) siempre que cumplan el contrato correspondiente.</p>
+<h3 id="41-contratos-minimos-implementados-en-fase-2-srcurccorecontractspy">4.1 Contratos mínimos ✅ (implementados en Fase 2, <code>src/urc/core/contracts.py</code>)<a class="headerlink" href="#41-contratos-minimos-implementados-en-fase-2-srcurccorecontractspy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>BridgeAdapter</code>: <code>reset()</code>, <code>step(action)</code>, <code>observation_spec()</code>, <code>action_spec()</code>, <code>close()</code>.</li>
+<li><code>AlgorithmBackend</code>: <code>train(bridge, env_spec, config) -&gt; Policy</code>, <code>load(checkpoint) -&gt; Policy</code>.</li>
+<li><code>Policy</code>: <code>predict(observation) -&gt; action</code>. <em>(Refinado respecto al borrador inicial: <code>predict</code>
+  vive en <code>Policy</code>, no en <code>AlgorithmBackend</code>, para poder tener varias políticas/checkpoints
+  cargados a la vez — necesario para <code>urc compare</code> en la Fase 8 — sin que compartan estado.)</em></li>
+<li><code>EnvironmentSpec</code>: metadatos declarativos (no lógica) — nombre, ruta al build, specs de obs/acción, parámetros configurables, curriculum opcional.</li>
+</ul>
+<p>El registro de componentes (<code>src/urc/core/registry.py</code>) expone <code>bridges</code>, <code>algorithms</code> y
+<code>environments</code>, cada uno resoluble por nombre string (<code>registry.get("nombre")</code> /
+<code>registry.create("nombre", ...)</code>). Los plugins in-process se cargan vía entry points
+(<code>urc.bridges</code>, <code>urc.algorithms</code>, <code>urc.environments</code>) o desde una carpeta local
+(<code>urc.core.plugins.load_plugins_from_dir</code>). Los plugins out-of-process (para escribirlos en
+cualquier lenguaje) hablan un protocolo JSON-RPC por stdio (<code>urc.core.rpc.StdioRpcClient</code>),
+implementado de referencia en <code>ExternalProcessBridge</code> (<code>src/urc/bridges/external_bridge.py</code>,
+registrado como <code>"external"</code>) y validado con un subproceso real en los tests.</p>
+<hr />
+<h2 id="5-sistema-de-configuracion">5. Sistema de configuración<a class="headerlink" href="#5-sistema-de-configuracion" title="Permanent link">&para;</a></h2>
+<p>Jerarquía de resolución (cada nivel sobreescribe al anterior):</p>
+<ol>
+<li><strong>Defaults de la librería</strong> (empaquetados con <code>urc</code>, ej. <code>ppo</code> con hiperparámetros razonables).</li>
+<li><strong>Config del proyecto</strong> (<code>urc.yaml</code> en la raíz del repo del usuario).</li>
+<li><strong>Config del experimento</strong> (<code>experiments/mi-experimento.yaml</code>).</li>
+<li><strong>Overrides de línea de comandos</strong> (<code>--set lr=3e-4</code>, <code>--bridge custom-socket</code>).</li>
+</ol>
+<p>Formato: YAML, validado con schema (pydantic o similar) para dar errores claros en vez de tracebacks. Ejemplo ilustrativo:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">bridge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mlagents</span><span class="w">          </span><span class="c1"># o &quot;socket&quot;, &quot;external&quot;, &quot;custom:mi_bridge.py&quot;</span>
+<span class="nt">algo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sb3-ppo</span><span class="w">             </span><span class="c1"># o &quot;custom:mi_algo.py&quot;</span>
+<span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">maze-v1</span>
+<span class="nt">hyperparameters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">learning_rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0e-4</span>
+<span class="w">  </span><span class="nt">gamma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.99</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span>
+<span class="nt">training</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">max_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2_000_000</span>
+<span class="w">  </span><span class="nt">checkpoint_every</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50_000</span>
+<span class="nt">logging</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tensorboard</span><span class="w">     </span><span class="c1"># o &quot;wandb&quot;, &quot;none&quot;</span>
+</code></pre></div>
+<p>Comandos asociados: <code>urc config show</code>, <code>urc config validate</code>, <code>urc config diff &lt;a&gt; &lt;b&gt;</code>.</p>
+<hr />
+<h2 id="6-diseno-de-la-cli">6. Diseño de la CLI<a class="headerlink" href="#6-diseno-de-la-cli" title="Permanent link">&para;</a></h2>
+<p>Nombre de comando propuesto: <code>urc</code> (<strong>U</strong>nity <strong>R</strong>L <strong>C</strong>ontroller) — <code>[DECISIÓN PENDIENTE]</code> confirmar o cambiar.</p>
+<table>
+<thead>
+<tr>
+<th>Comando</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>urc init &lt;nombre&gt;</code></td>
+<td>Crea un proyecto nuevo con estructura y config por defecto</td>
+</tr>
+<tr>
+<td><code>urc doctor</code></td>
+<td>Diagnostica el entorno: Unity instalado, versión de Python, GPU, dependencias, builds disponibles</td>
+</tr>
+<tr>
+<td><code>urc env list / describe / launch</code></td>
+<td>Lista, inspecciona o lanza un mapa/entorno registrado</td>
+</tr>
+<tr>
+<td><code>urc bridge list / set / info</code></td>
+<td>Gestiona qué bridge está activo</td>
+</tr>
+<tr>
+<td><code>urc algo list / info</code></td>
+<td>Lista algoritmos registrados y sus hiperparámetros disponibles</td>
+</tr>
+<tr>
+<td><code>urc train [--bridge] [--algo] [--env] [--set k=v]</code></td>
+<td>Lanza un entrenamiento</td>
+</tr>
+<tr>
+<td><code>urc eval &lt;run&gt;</code></td>
+<td>Evalúa un checkpoint N episodios y reporta métricas</td>
+</tr>
+<tr>
+<td><code>urc compare &lt;run1&gt; &lt;run2&gt; ...</code></td>
+<td>Compara métricas entre runs/experimentos</td>
+</tr>
+<tr>
+<td><code>urc record &lt;run&gt;</code></td>
+<td>Graba vídeo/replay de un episodio con la política entrenada</td>
+</tr>
+<tr>
+<td><code>urc visualize [&lt;run&gt;]</code></td>
+<td>Levanta TensorBoard u otro dashboard configurado</td>
+</tr>
+<tr>
+<td><code>urc plugin list / add / remove</code></td>
+<td>Gestiona plugins de terceros (bridges, algoritmos, entornos)</td>
+</tr>
+<tr>
+<td><code>urc config show / validate / diff</code></td>
+<td>Gestiona la configuración jerárquica</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-estructura-de-repositorio-propuesta">7. Estructura de repositorio propuesta<a class="headerlink" href="#7-estructura-de-repositorio-propuesta" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>unity-rl-controller/
+├── ROADMAP.md                 (este documento)
+├── PROTOCOL.md                 (especificación del protocolo out-of-process, Fase 10)
+├── pyproject.toml
+├── src/urc/
+│   ├── cli/                   comandos (uno por subcomando) + _shared.py (opciones/carga común)
+│   ├── core/
+│   │   ├── contracts.py       BridgeAdapter, AlgorithmBackend, EnvironmentSpec
+│   │   ├── registry.py        sistema de registro de plugins (register/register_lazy/set)
+│   │   ├── environments.py    EnvironmentSpec desde config -&gt; registry (ver Fase 7)
+│   │   ├── evaluation.py      EpisodeResult/EvalResult + run_episodes() (Fase 8)
+│   │   ├── runs.py            run_info.json de un run entrenado (Fase 8)
+│   │   └── jsonutil.py        json_safe(): numpy -&gt; tipos nativos, sin depender de numpy
+│   ├── bridges/
+│   │   ├── mlagents_bridge.py (default, carga perezosa)
+│   │   ├── external_bridge.py (protocolo out-of-process, subproceso)
+│   │   └── socket_bridge.py   (protocolo out-of-process, TCP)
+│   ├── algorithms/
+│   │   ├── sb3_base.py        (SB3Backend + _build_logging: tensorboard/wandb, ver Fase 9)
+│   │   ├── sb3_ppo.py         (default: PPO, admite acciones discretas y continuas)
+│   │   ├── sb3_sac.py         (alternativa: SAC, solo acciones continuas)
+│   │   ├── gym_bridge.py      (BridgeAdapter -&gt; entorno Gymnasium)
+│   │   └── curriculum.py      (CurriculumCallback para SB3)
+│   └── config/                loader + schema + resolución jerárquica
+├── unity/                     proyecto(s) de Unity con las escenas/mapas
+├── examples/
+│   └── csharp_bridge/         bridge de referencia en C# (Fase 10, ver PROTOCOL.md)
+├── docs/                      documentación pública (mkdocs)
+└── tests/
+</code></pre></div>
+<hr />
+<h2 id="8-pipeline-de-desarrollo-por-fases">8. Pipeline de desarrollo por fases<a class="headerlink" href="#8-pipeline-de-desarrollo-por-fases" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Cada fase produce algo funcional y verificable antes de pasar a la siguiente. No hace falta terminar el 100% de una fase para asomarse a la siguiente, pero sí tener el "core" de cada fase cerrado.</p>
+</blockquote>
+<h3 id="fase-0-fundamentos-y-decisiones-base">Fase 0 — Fundamentos y decisiones base<a class="headerlink" href="#fase-0-fundamentos-y-decisiones-base" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Confirmar nombre del proyecto y del comando CLI (<code>urc</code> u otro)</li>
+<li>[ ] Elegir licencia (MIT/Apache-2.0, dado el objetivo open-source)</li>
+<li>[ ] Prototipo mínimo: verificar que ML-Agents responde bien como bridge por defecto (smoke test manual)</li>
+<li>[ ] Redactar el contrato (interfaz) exacto de <code>BridgeAdapter</code>, <code>AlgorithmBackend</code>, <code>EnvironmentSpec</code></li>
+<li>[ ] Elegir gestor de entorno/paquetes Python (<code>uv</code> recomendado, o <code>poetry</code>/<code>venv+pip</code>)</li>
+</ul>
+<h3 id="fase-1-esqueleto-del-repositorio">Fase 1 — Esqueleto del repositorio ✅<a class="headerlink" href="#fase-1-esqueleto-del-repositorio" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>git init</code> + primer commit</li>
+<li>[x] Estructura de carpetas (<code>src/</code> layout) según sección 7</li>
+<li>[x] <code>pyproject.toml</code> con metadata, dependencias base, entry point del CLI</li>
+<li>[x] Instalación editable (<code>pip install -e .</code>) funcionando</li>
+<li>[x] Linter/formatter (<code>ruff</code>) + pre-commit hooks</li>
+<li>[x] CI básico (lint + tests en cada push)</li>
+<li>[x] README corto que enlaza a este ROADMAP</li>
+</ul>
+<h3 id="fase-2-contratos-y-sistema-de-plugins">Fase 2 — Contratos y sistema de plugins ✅<a class="headerlink" href="#fase-2-contratos-y-sistema-de-plugins" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Clases base abstractas: <code>BridgeAdapter</code>, <code>Policy</code>, <code>AlgorithmBackend</code>, <code>EnvironmentSpec</code></li>
+<li>[x] <code>Registry</code> genérico (registrar por nombre string, resolver desde config)</li>
+<li>[x] Soporte de plugins in-process (Python, vía <code>entry_points</code> o carpeta de plugins)</li>
+<li>[x] Soporte de plugins out-of-process: protocolo JSON-RPC sobre stdio (decisión tomada, ver
+      sección 10) + <code>ExternalProcessBridge</code> como implementación de referencia</li>
+<li>[x] Implementación <em>fake/no-op</em> de cada contrato + tests unitarios sobre los contratos
+      (15 tests, incluido un round-trip real contra un subproceso)</li>
+</ul>
+<h3 id="fase-3-bridge-por-defecto-unity-ml-agents">Fase 3 — Bridge por defecto: Unity ML-Agents ✅<a class="headerlink" href="#fase-3-bridge-por-defecto-unity-ml-agents" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Wrapper de <code>mlagents_envs.UnityEnvironment</code> implementando <code>BridgeAdapter</code>
+      (<code>src/urc/bridges/mlagents_bridge.py</code>, registrado como <code>"mlagents"</code>)</li>
+<li>[x] Soporte modo headless (<code>no_graphics=True</code>) + múltiples instancias en paralelo
+      (<code>worker_id</code>/<code>base_port</code>) — expuesto tal cual de <code>UnityEnvironment</code></li>
+<li>[x] Modo "editor" para debug interactivo: <code>file_name=None</code> conecta contra el editor
+      abierto en vez de lanzar un build</li>
+<li>[x] <code>urc env launch</code> (<code>--executable</code>, <code>--no-graphics</code>, <code>--worker-id</code>, <code>--seed</code>, <code>--timeout</code>)
+      para lanzar/verificar conexión — <strong>verificado contra Unity real</strong> (ver nota abajo)</li>
+<li>[x] Segundo bridge mínimo de ejemplo: <code>SocketBridge</code> (TCP, <code>src/urc/bridges/socket_bridge.py</code>),
+      además del <code>ExternalProcessBridge</code> de la Fase 2 — ambos comparten protocolo
+      (<code>JsonLineRpcClient</code>/<code>JsonLineBridge</code> en <code>core/rpc.py</code>), demostrando que el contrato es
+      intercambiable con distintos transportes (stdio, socket, y el gRPC interno de ML-Agents)</li>
+</ul>
+<p><strong>Limitación conocida y deliberada de <code>MLAgentsBridge</code></strong>: solo soporta un behavior con un único
+agente activo (el caso de los entornos de ejemplo simples de ML-Agents, como Basic o GridWorld).
+Si el entorno tiene más de un agente/behavior activo, lanza <code>NotImplementedError</code> con un mensaje
+explícito en vez de comportarse de forma incorrecta en silencio. Multi-agente queda para cuando el
+contrato lo necesite explícitamente.</p>
+<p><strong>Ampliación (2026-07-05): múltiples sensores de observación.</strong> La limitación original también
+incluía "un único sensor de observación", pero se levantó al verificar el bridge contra WallJump
+(escena real de ML-Agents con salto + detección de obstáculos por raycast, ver Fase 8/11 para el
+resto de gotchas de esa verificación): su agente expone 3 sensores separados (<code>observation_specs</code>
+de tamaños <code>(210,), (210,), (24,)</code> — vector base más dos <code>RayPerceptionSensor</code>), y el bridge
+lanzaba <code>NotImplementedError</code> con solo uno soportado. Ahora <code>observation_spec()</code>/<code>reset()</code>/<code>step()</code>
+concatenan todos los sensores en un único vector plano (<code>MLAgentsBridge._flatten_observation</code>).
+Esto es correcto porque <code>urc</code> solo entrena con <code>MlpPolicy</code> (nunca CNN sobre observaciones
+visuales) — para eso sí importaría preservar la estructura por sensor, pero es un caso que no está
+en el alcance actual del proyecto.</p>
+<p><strong>Gotcha real encontrado #1</strong>: <code>mlagents-envs</code> 0.28.0 (la última en PyPI) trae bindings de
+protobuf generados con una versión antigua; con <code>protobuf&gt;=3.21</code> falla al importar. Se fija
+<code>protobuf&lt;3.21</code> en el extra <code>mlagents</code> de <code>pyproject.toml</code>.</p>
+<p><strong>Gotcha real encontrado #2</strong>: <code>action_spec()</code> reportaba <code>dtype="float32"</code> para acciones
+discretas (heredado del default del dataclass), cuando internamente ya se construían como
+<code>int32</code> para la llamada a <code>ActionTuple</code>. Solo se detectó al probar contra Unity real, no lo
+cubría el <code>UnityEnvironment</code> falso de los tests — corregido y añadido a la aserción del test.</p>
+<p><strong>Verificado contra Unity real</strong> (2026-07-04): <code>urc env launch</code> conectado al editor con la escena
+<code>Basic.unity</code> de ML-Agents (Unity 6000.0.77f1) — reportó <code>Observaciones: shape=(20,)
+dtype=float32</code> y <code>Acciones: shape=(1,) dtype=int32 discreto=True</code>, coincidiendo exactamente con
+la especificación conocida del entorno Basic (observación one-hot de 20 posiciones, 1 acción
+discreta). Instalación usada: Unity Hub 3.19.3 + Unity 6000.0.77f1, proyecto de ejemplo oficial
+clonado de <code>Unity-Technologies/ml-agents</code> (carpeta <code>Project/</code>, no <code>DevProject/</code> ni
+<code>PerformanceProject/</code>, que están casi vacíos).</p>
+<h3 id="fase-4-sistema-de-configuracion">Fase 4 — Sistema de configuración ✅<a class="headerlink" href="#fase-4-sistema-de-configuracion" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Loader de YAML jerárquico (defaults → proyecto → experimento → CLI),
+      <code>urc/config/loader.py::resolve_config</code>, con deep-merge (los dicts anidados se
+      fusionan, no se sustituyen wholesale)</li>
+<li>[x] Validación con schema (pydantic v2, <code>urc/config/schema.py::UrcConfig</code>) y errores
+      legibles (<code>ConfigError</code>, lista "campo: motivo" en vez de traceback de pydantic)</li>
+<li>[x] <code>urc config show / validate / diff</code></li>
+</ul>
+<p><strong>Defaults empaquetados vs defaults del schema</strong>: <code>UrcConfig()</code> "a pelo" (sin pasar por
+<code>resolve_config</code>) tiene <code>hyperparameters={}</code> — los valores reales (<code>learning_rate</code>, <code>gamma</code>,
+<code>batch_size</code>) viven en <code>src/urc/config/defaults.yaml</code>, la capa 1 de la jerarquía. Son
+intencionalmente distintos: el schema define la <em>forma</em>, <code>defaults.yaml</code> define los <em>valores</em>
+por defecto reales, siguiendo el principio de "config por encima de código" (sección 2).</p>
+<p><strong>Gotcha real encontrado</strong>: <code>yaml.safe_load("3e-4")</code> devuelve el <em>string</em> <code>"3e-4"</code>, no el float
+<code>0.0003</code> — la spec YAML 1.1 exige un punto decimal en la mantisa para reconocer notación
+científica. Como es la forma más natural de escribir un learning rate en un <code>--set</code>, se sustituyó
+por un parser de escalares propio (<code>int</code> → <code>float</code> → <code>bool</code>/<code>null</code> → YAML como último recurso)
+que sí lo entiende. Sin este fix, <code>--set hyperparameters.learning_rate=3e-4</code> habría fallado en
+silencio (guardaría un string donde se espera un número).</p>
+<p><strong>Nota sobre <code>algo: mlagents-ppo</code></strong>: es un nombre provisional en <code>defaults.yaml</code>; todavía no
+existe ningún backend de algoritmo registrado (eso es la Fase 6). El sistema de config no valida
+que <code>bridge</code>/<code>algo</code>/<code>env</code> existan de verdad en sus registries — esa comprobación ocurre al
+resolver/instanciar desde config (Phase 5+), reutilizando el <code>KeyError</code> con opciones disponibles
+que ya da <code>Registry.get()</code> (Fase 2).</p>
+<h3 id="fase-5-cli-minimo-viable-de-entrenamiento">Fase 5 — CLI mínimo viable de entrenamiento ✅<a class="headerlink" href="#fase-5-cli-minimo-viable-de-entrenamiento" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>urc train</code> uniendo bridge + config + algoritmo por defecto</li>
+<li>[x] Checkpointing a disco + reanudar entrenamiento (<code>--resume</code>)</li>
+<li>[x] <code>urc doctor</code> (Python, GPU/CUDA, dependencias opcionales instaladas o no)</li>
+<li>[x] <code>urc init &lt;nombre&gt;</code> (scaffolding de proyecto nuevo)</li>
+</ul>
+<p><strong>Pivote importante respecto al borrador inicial</strong>: el algoritmo por defecto ya NO es "el trainer
+nativo de ML-Agents" (<code>mlagents-learn</code>), sino <strong>PPO de Stable-Baselines3</strong> (<code>sb3-ppo</code>), entrenado a
+través de un wrapper Gymnasium (<code>BridgeGymEnv</code>) sobre <em>cualquier</em> <code>BridgeAdapter</code>. Motivo: el
+trainer nativo de ML-Agents no compone con nuestro contrato — gestiona su propia conexión a Unity
+internamente y no acepta un <code>BridgeAdapter</code> externo, así que usarlo como "el default" habría
+significado que la primera vez que se entrena algo, ni siquiera se ejercita la arquitectura de
+bridges que se ha construido en las Fases 2-3. SB3 sobre <code>BridgeGymEnv</code> sí funciona con
+<em>cualquier</em> bridge (mlagents, socket, subproceso) sin acoplarse a Unity en absoluto — es una
+validación real de que el contrato funciona, no solo un wrapper cosmético. Invocar
+<code>mlagents-learn</code> como backend alternativo (para quien quiera self-play/currículo nativos de
+ML-Agents) queda como posibilidad futura, no descartada, solo pospuesta.</p>
+<p><strong>Nuevas piezas de arquitectura que introdujo esta fase</strong> (no estaban en el diseño original):
+- <code>Registry.register_lazy(nombre, módulo, install_hint=...)</code>: permite que <code>bridges.get("mlagents")</code>
+  o <code>algorithms.get("sb3-ppo")</code> importen su módulo bajo demanda la primera vez que se piden de
+  verdad, sin forzar sus dependencias pesadas (grpc/protobuf, torch/gymnasium) a quien no las usa.
+  Si la importación falla, el error incluye el <code>pip install "urc[...]"</code> correcto.
+- <code>BridgeGymEnv</code> (<code>src/urc/algorithms/gym_bridge.py</code>): adapta cualquier <code>BridgeAdapter</code> a la
+  interfaz estándar de Gymnasium, para que cualquier librería de ese ecosistema (SB3, RLlib...)
+  pueda entrenar contra él sin saber nada de Unity.
+- <code>ActionSpec.discrete_branches</code>: campo nuevo (opcional) en el contrato — la Fase 3 solo
+  reportaba <code>shape</code>/<code>discrete</code> para mostrarlos en <code>urc env launch</code>, pero construir un espacio Gym
+  discreto de verdad (<code>Discrete(n)</code> / <code>MultiDiscrete([...])</code>) necesita la cardinalidad de cada
+  rama, no solo cuántas ramas hay. Extensión retrocompatible (default <code>None</code>).
+- <code>bridge_options</code> / <code>output_dir</code> en <code>UrcConfig</code>: <code>bridge_options</code> son los kwargs que se pasan
+  literalmente al constructor del bridge elegido (p. ej. <code>bridge_options.file_name</code> para
+  <code>mlagents</code>, <code>bridge_options.host</code>/<code>.port</code> para <code>socket</code>) — evita acoplar <code>urc train</code> a los
+  parámetros concretos de cada bridge antes de que exista <code>EnvironmentSpec</code> completo (Fase 7).</p>
+<p><strong>Tres bugs reales encontrados al probar <code>urc train</code> de verdad</strong> (ninguno lo detectaban los tests
+con dobles, porque nunca se había ejercitado el camino completo bridge→Gym→SB3):
+1. <code>_action_space</code> construía un <code>Box(-inf, +inf)</code> para acciones continuas — SB3 exige límites
+   finitos en el espacio de <em>acciones</em> (no en el de observaciones). Arreglado con <code>[-1, 1]</code>,
+   la convención habitual de ML-Agents para acciones continuas.
+2. SB3 pasa las acciones como <code>numpy.ndarray</code>, que <code>json.dumps</code> no sabe serializar — rompía
+   <code>SocketBridge</code>/<code>ExternalProcessBridge</code> (que hablan JSON por líneas). Arreglado con <code>_json_safe</code>
+   en <code>core/rpc.py</code>, que usa duck-typing (<code>hasattr(valor, "tolist")</code>) para no tener que añadir
+   numpy como dependencia dura de esos dos bridges (su gracia es depender de cero extras).
+3. <code>Registry.create(name, **kwargs)</code> (Fase 2) chocaba si el propio plugin tenía un parámetro
+   llamado igual que uno interno — ya arreglado entonces, mencionado aquí porque es la misma
+   categoría de bug (solo se ve entrenando de verdad, no con mocks).</p>
+<p><strong>Verificado manualmente de extremo a extremo</strong> (2026-07-04): <code>urc train</code> contra un servidor TCP
+de juguete (bridge <code>socket</code>), con hiperparámetros minúsculos para que corra en segundos —
+checkpoints guardados correctamente en disco, y <code>--resume</code> continuando el contador de timesteps
+sin reiniciarlo. Automatizado como test en <code>tests/test_cli_train.py</code>.</p>
+<h3 id="fase-6-algoritmos-intercambiables">Fase 6 — Algoritmos intercambiables ✅<a class="headerlink" href="#fase-6-algoritmos-intercambiables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Segundo backend real y distinto: <strong>SAC de Stable-Baselines3</strong> (<code>sb3-sac</code>). Comparte mecánica
+      de entrenar/reanudar/checkpoint con <code>sb3-ppo</code> vía una base común (<code>algorithms/sb3_base.py</code>,
+      <code>SB3Backend</code>) — solo cambia la clase de algoritmo de SB3. SAC no admite acciones discretas
+      (limitación real del algoritmo): se comprueba explícitamente y se rechaza con un mensaje
+      claro (<code>_check_action_space</code>) en vez de dejar que falle dentro de SB3. El candidato
+      "invocar <code>mlagents-learn</code> como proceso externo" sigue disponible para más adelante si hace
+      falta self-play/currículo nativos de ML-Agents — no se ha hecho ahora por complejidad y
+      riesgo de dependencias frente al beneficio (ver Fase 5 sobre el pivote a SB3).</li>
+<li>[x] Mecanismo para que el usuario registre su propio algoritmo: <strong>ya existía desde la Fase 2</strong>
+      (<code>load_plugins_from_dir</code>/<code>load_entry_point_plugins</code>) pero <strong>nunca se llamaba desde el
+      CLI</strong> — hueco real cerrado en esta fase con <code>load_all_plugins()</code>, invocado al principio de
+      <code>urc train</code> y <code>urc algo list/info</code>. Antes de esta fase, un plugin de terceros no tenía
+      ninguna forma de llegar a registrarse en una sesión real de <code>urc</code>.</li>
+<li>[x] <code>urc algo list / info</code> (<code>src/urc/cli/algo.py</code>) — <code>list</code> no importa nada (no fuerza
+      dependencias opcionales solo por listar nombres), <code>info</code> sí, al pedir la descripción real.</li>
+<li>[x] ~~Gestión de hiperparámetros vía <code>--set clave=valor</code>~~ ya cubierto desde la Fase 4/5.</li>
+</ul>
+<p><strong>Bug real encontrado escribiendo el test del plugin custom</strong>: <code>load_plugins_from_dir</code> re-ejecutaba
+el archivo entero cada vez que se llamaba, sin comprobar si ya estaba cargado. Como <code>urc train</code> y
+<code>urc algo list</code> llaman ambos a <code>load_all_plugins()</code>, invocarlos dos veces en el mismo proceso (tal
+cual pasa en los tests, y pasaría en cualquier sesión que combine varios comandos) intentaba
+re-registrar el mismo nombre dos veces → <code>ValueError</code>. Arreglado haciéndolo idempotente por ruta
+absoluta (<code>_plugin_module_name</code>, hash de la ruta resuelta): si el archivo ya se cargó en este
+proceso, no se vuelve a importar. De paso corrige otro problema latente: dos proyectos con un
+<code>plugins/mi_algo.py</code> cada uno habrían colisionado en el mismo nombre de módulo sintético.</p>
+<h3 id="fase-7-entornos-y-mapas">Fase 7 — Entornos y mapas ✅<a class="headerlink" href="#fase-7-entornos-y-mapas" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>EnvironmentSpec</code> completo: <code>build_path</code>, <code>bridge_options</code>, <code>parameters</code> (domain
+      randomization estática), <code>curriculum</code> (lista de lessons). <code>observation_spec</code>/<code>action_spec</code>
+      se dejan sin poblar a propósito: son responsabilidad dinámica del bridge (<code>bridge.reset()</code>
+      ya las expone), no algo que declarar a mano en YAML.</li>
+<li>[x] <code>urc env list / describe / create</code> (<code>src/urc/cli/env.py</code>), y <code>urc env launch --env &lt;nombre&gt;</code>
+      además (no estaba en el checklist original, pero es la extensión natural de la Fase 3 ahora
+      que existen entornos registrados: usa el <code>build_path</code>/<code>bridge_options</code> del entorno, con los
+      flags explícitos de siempre tomando precedencia si se pasan).</li>
+<li>[x] Soporte real (no un stub) de curriculum learning y domain randomization vía config:</li>
+<li><code>BridgeAdapter.set_parameters(dict)</code> — nuevo método <strong>no abstracto</strong> con no-op por defecto
+    (extensión retrocompatible del contrato, igual que <code>discrete_branches</code> en la Fase 5): los
+    bridges existentes no necesitan implementarlo para seguir siendo válidos.</li>
+<li><code>MLAgentsBridge.set_parameters</code>: lo envía a Unity de verdad vía
+    <code>EnvironmentParametersChannel</code> de ML-Agents (side channel). La escena solo lo usa si su propio
+    código C# lo lee explícitamente — el envío en sí funciona igual lo lea o no.</li>
+<li><code>JsonLineBridge.set_parameters</code> (socket/subproceso): un método RPC más (<code>"set_parameters"</code>).</li>
+<li><code>CurriculumCallback</code> (<code>src/urc/algorithms/curriculum.py</code>): callback real de SB3 que aplica la
+    primera lesson al empezar a entrenar y avanza a la siguiente cuando la recompensa media de
+    los últimos N episodios supera el umbral de la lesson. Acoplado a SB3 a propósito (es nuestro
+    único bucle de entrenamiento hoy); otro backend necesitaría su propia integración.</li>
+<li><code>parameters</code> estáticos de un entorno se aplican una vez al empezar a entrenar
+    (<code>SB3Backend.train</code>), antes de que el currículo (si lo hay) aplique la lesson 0.</li>
+<li>[ ] Generación procedural de mapas parametrizada — <strong>no se ha hecho</strong>: es explícitamente
+      opcional en el checklist original y requiere scripting de Unity Editor (C#), fuera del
+      alcance de una librería del lado Python. Queda descartada salvo que surja una necesidad
+      concreta más adelante.</li>
+</ul>
+<p><strong>Verificado manualmente de extremo a extremo</strong> (2026-07-04): <code>urc env create maze-v1
+--build-path builds/maze.exe</code>, <code>urc env list</code>, <code>urc env describe maze-v1</code> contra un <code>urc.yaml</code>
+real; y <code>urc train</code> con un entorno <code>socket</code> de juguete configurado con dos <em>lessons</em> de currículo
+— el servidor de juguete confirmó recibir <code>{"difficulty": 0.1}</code> al empezar y <code>{"difficulty": 0.9}</code>
+tras el avance, exactamente como se diseñó. Automatizado después en
+<code>tests/test_cli_train_curriculum.py</code>.</p>
+<p><strong>Decisión de diseño</strong>: <code>Registry</code> gana un método <code>set()</code> (upsert, no falla si ya existe) además
+de <code>register()</code> (falla si ya existe). Un <code>EnvironmentSpec</code> se reconstruye cada vez que se resuelve
+la config — no es un registro de "una vez" como un plugin de código — así que necesita semántica
+de upsert, no de registro único.</p>
+<p><strong>Ajuste a la estructura de repositorio propuesta (sección 7)</strong>: la carpeta <code>envs/</code> que se había
+planeado ahí no ha hecho falta. Los entornos son datos declarados en YAML (<code>environments:</code> en
+<code>urc.yaml</code>), no clases Python como los bridges/algoritmos, así que no hay "implementaciones" que
+guardar en una carpeta de plugins — toda la lógica cabe en <code>core/environments.py</code>. Se ha eliminado
+la carpeta <code>envs/</code> vacía que quedó de la Fase 1.</p>
+<h3 id="fase-8-evaluacion-y-benchmarking">Fase 8 — Evaluación y benchmarking ✅<a class="headerlink" href="#fase-8-evaluacion-y-benchmarking" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>urc eval &lt;checkpoint&gt;</code>: corre N episodios con la política cargada (reward medio ± std,
+      duración media en pasos, tasa de éxito) y guarda el resultado en <code>eval_&lt;checkpoint&gt;.json</code>
+      junto al checkpoint, para que <code>urc compare</code> lo pueda leer después.</li>
+<li>[x] <code>urc compare &lt;path...&gt;</code>: acepta un resultado de eval directamente, un checkpoint (busca su
+      <code>eval_&lt;nombre&gt;.json</code> hermano) o una carpeta de run (usa el más reciente), y compara
+      reward/éxito/duración en una tabla.</li>
+<li>[x] <code>urc record &lt;checkpoint&gt;</code>: graba la trayectoria (observación/acción/recompensa por paso) de
+      N episodios en un <code>.jsonl</code> — ver nota abajo sobre por qué esto y no vídeo de píxeles.</li>
+</ul>
+<p><strong><code>run_info.json</code>, pieza nueva no prevista en el diseño original</strong>: <code>urc train</code> ahora deja un
+<code>run_info.json</code> junto a los checkpoints (bridge, <code>bridge_options</code>, algoritmo, entorno). Sin esto,
+<code>urc eval</code>/<code>urc record</code> habrían obligado al usuario a repetir <code>--project</code>/<code>--set</code> con exactamente
+la misma config que usó para entrenar, solo para saber qué bridge/algoritmo reconstruir — un caso
+claro de fricción evitable. <code>resolve_config</code> gana un parámetro <code>extra_defaults</code> (capa de prioridad
+justo por encima de los defaults de la librería) para que el <code>run_info.json</code> se pueda sobreescribir
+con un <code>--set</code>/<code>urc.yaml</code> explícito si hace falta, en vez de ser inamovible.</p>
+<p><strong>Qué mide "éxito"</strong>: el contrato <code>BridgeAdapter</code>/<code>StepResult</code> no tiene un campo "éxito" — solo
+<code>reward</code>/<code>done</code>/<code>info</code>. <code>urc eval</code> usa, en este orden: (1) <code>info["success"]</code> del último paso si el
+entorno lo reporta, (2) si no, <code>--success-threshold X</code> (recompensa total del episodio &gt;= X), (3) si
+no hay ninguna de las dos, reporta la tasa de éxito como "N/A" en vez de inventar un criterio.</p>
+<p><strong><code>urc record</code> graba trayectorias, no vídeo de píxeles</strong>: "vídeo/replay" en el checklist original
+sugería captura de vídeo. No se ha hecho así a propósito: nuestro contrato <code>BridgeAdapter</code> no
+expone el renderizado de Unity (ni <code>MLAgentsBridge</code> ni los demás bridges tienen forma de capturar
+píxeles), así que producir un vídeo real exigiría scripting adicional en el lado de Unity (cámara
+-&gt; archivo) y una dependencia nueva para codificar vídeo (<code>opencv-python</code>/<code>imageio</code>), ninguna de
+las cuales está en el plan actual. En su lugar, <code>urc record</code> guarda un replay estructurado
+(observación/acción/recompensa por paso en <code>.jsonl</code>) — genuinamente útil para depurar o analizar
+una política sin tener Unity abierto, aunque no sea "ver" el episodio. Grabar vídeo de verdad queda
+anotado como posible ampliación futura si hace falta, no descartado.</p>
+<p><strong>Ampliación implementada y verificada (2026-07-04): vídeo real del progreso de entrenamiento.</strong>
+La limitación de arriba sigue en pie para <code>urc record</code>, pero para <code>urc train</code> sí se implementó una
+vía real:
+- <code>unity/UrcVideoRecorder/UrcVideoRecorder.cs</code>: script C# (fuera del contrato <code>BridgeAdapter</code> a
+  propósito, ver más abajo) que el usuario añade a su escena. Captura fotogramas leyendo el
+  framebuffer directamente (<code>Texture2D.ReadPixels</code>, no <code>ScreenCapture.CaptureScreenshot</code> — ver
+  gotcha #2) y escucha un side channel nuevo para cambiar <code>Time.timeScale</code>.
+- <code>RecordingControlChannel</code> (<code>src/urc/bridges/_recording_channel.py</code>) + <code>MLAgentsBridge.set_time_scale</code>/
+  <code>start_recording</code>: el lado Python de ese side channel, mismo patrón que
+  <code>EnvironmentParametersChannel</code>/<code>set_parameters</code>.
+- <code>RecordingCallback</code> (<code>src/urc/algorithms/recording.py</code>), enganchado en <code>SB3Backend.train()</code> junto
+  a <code>CurriculumCallback</code>/<code>CheckpointCallback</code>: durante el grueso del entrenamiento sube
+  <code>Time.timeScale</code> (cámara rápida); cada <code>normal_speed_every_n_steps</code> pasos intercala un episodio a
+  velocidad normal (<code>1.0</code>) para que se note la mejora; al terminar, graba <code>final_episodes</code> más con
+  la política ya entrenada; y ensambla todos los fotogramas en un único <code>.mp4</code> con <code>imageio</code>
+  (extra opcional <code>video</code>, trae su propio <code>ffmpeg</code> portable — no había <code>ffmpeg</code> en el <code>PATH</code> de
+  este sistema).
+- <strong>Deliberadamente fuera del contrato <code>BridgeAdapter</code></strong> (a diferencia de <code>set_parameters</code>, que sí
+  tiene un default no-op ahí): <code>set_time_scale</code>/<code>start_recording</code> son un concepto específico de
+  renderizado de Unity, no algo que tenga sentido pedirle a cualquier bridge genéricamente. Se
+  detectan con <code>hasattr(bridge, ...)</code> en <code>RecordingCallback</code>; con cualquier bridge que no los tenga,
+  <code>recording.enabled=true</code> solo avisa (<code>warnings.warn</code>) y el entrenamiento sigue igual, sin vídeo.</p>
+<p><strong>Verificado de verdad contra Unity real</strong> (escena Basic, editor): tras cuatro gotchas reales
+(abajo), un vídeo de 5.000 pasos + 3 episodios finales produjo <strong>453 fotogramas / 45.3 s</strong>, con
+diferencias de píxeles genuinas entre el primero, el de en medio y el último frame (contenido real,
+no repetido ni atascado) — <code>runs/default/video/training_progress.mp4</code>.</p>
+<p>Cuatro problemas reales encontrados montando esto, todos con causa raíz identificada (no parches a
+ciegas):
+1. <strong><code>Time.timeScale</code> interpretado como 500 en vez de 50</strong>: <code>float.TryParse(string)</code> en C# sin
+   especificar cultura usa la del sistema operativo. En español, <code>.</code> es separador de miles, así que
+   <code>"50.0"</code> (el formato que manda Python) se leía mal y superaba el límite de 100 del Editor.
+   Arreglado forzando <code>CultureInfo.InvariantCulture</code> en el <code>TryParse</code>.
+2. <strong><code>ScreenCapture.CaptureScreenshot(path)</code> solo capturaba 1-2 fotogramas de miles de peticiones,
+   sin ningún error en consola</strong>: esa API encola la captura de forma asíncrona y solo admite una
+   "en vuelo" a la vez; las peticiones de más se descartan en silencio. Se cambió a leer el
+   framebuffer directamente con <code>Texture2D.ReadPixels</code> dentro de una corrutina con
+   <code>WaitForEndOfFrame</code> — sigue sin ser suficiente por sí solo (ver gotcha #4), pero es la técnica
+   correcta y fiable.
+3. Intento intermedio descartado: enganchar la captura a <code>Academy.AgentPreStep</code> (una vez por paso
+   de RL) en vez de a <code>Update()</code>, con la hipótesis de que a <code>timeScale</code> alto Unity agrupa muchos
+   <code>FixedUpdate</code> por cada fotograma renderizado. Cierto, pero no era la causa principal — se
+   mantiene la lectura de que <code>ReadPixels</code> solo tiene sentido si va atado a un fotograma realmente
+   renderizado (<code>WaitForEndOfFrame</code>), no a cada paso de simulación.
+4. <strong>La causa real: la escena <code>Basic</code> resetea cada episodio recargando la escena ENTERA</strong>
+   (<code>SceneManager.LoadScene</code>, en <code>BasicController.ResetAgent()</code> — comentario propio del ejemplo
+   oficial: "a very inefficient way to reset the scene. Used here for testing."). Como los
+   episodios de Basic son cortísimos, esto destruye y recrea <code>UrcVideoRecorder</code> constantemente
+   durante todo el entrenamiento — con campos de instancia normales, cada recarga perdía la carpeta
+   de salida y reiniciaba el contador de fotogramas a 0 (sobrescribiendo capturas ya guardadas), y
+   el <code>OnDisable</code> de cada recarga reseteaba <code>Time.timeScale</code> a 1 justo después de que
+   <code>RecordingCallback</code> lo hubiera puesto a 50. Diagnosticado añadiendo logs temporales
+   (<code>OnEnable</code>/<code>OnDisable</code> con <code>Time.frameCount</code>) que mostraron el ciclo destruir/recrear
+   disparándose cada pocos fotogramas. Arreglado usando campos <strong>estáticos</strong> (<code>s_OutputDir</code>,
+   <code>s_FrameCounter</code>, <code>s_LastCaptureTime</code>, <code>s_CaptureTexture</code>) — sobreviven a la recarga de escena
+   porque viven en el dominio de C#, no en la instancia del <code>GameObject</code> — y quitando el reset de
+   <code>Time.timeScale</code> de <code>OnDisable</code> (ya no hace falta, y deshacía el control de <code>RecordingCallback</code>
+   en cada episodio).</p>
+<p>Ejemplo end-to-end documentado en
+<a href="https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/unity_basic_ppo/README.md#vídeo-automático-del-progreso-de-entrenamiento"><code>examples/unity_basic_ppo/README.md</code></a>.</p>
+<p><strong>Ampliaciones posteriores (2026-07-05), todas verificadas contra Unity real</strong>:
+- <strong>Cámara súper lenta de verdad en los episodios finales</strong> (<code>final_time_scale</code>, por defecto
+  <code>0.05</code>, no solo <code>1.0</code>): con episodios cortos (Basic se resuelve en ~7 pasos), a velocidad normal
+  el acercamiento al objetivo apenas ocupa tiempo real y se ve como un teletransporte en vez de un
+  movimiento — a <code>0.05</code> el mismo episodio ocupa ~20x más tiempo real, dando muchos más fotogramas
+  del mismo recorrido.
+- <strong>Etiqueta de paso quemada en cada fotograma</strong> (<code>RecordingCallback._label_for_frame</code>): se guarda
+  una línea temporal <code>(tiempo real, num_timesteps)</code> durante el entrenamiento y, al ensamblar el
+  vídeo, se interpola el paso correspondiente a la fecha de modificación de cada PNG, dibujado con
+  <code>PIL.ImageDraw</code> sobre una caja negra en la esquina inferior izquierda ("Paso 12.345" o "Modelo
+  final"). <strong>Gotcha real</strong>: <code>PIL.ImageFont.load_default()</code> no soporta acentos — "Política final"
+  salía con un cuadrado en vez de la "í" — arreglado quitando el acento ("Modelo final").
+- <strong>Ventanas periódicas más lentas y más frecuentes</strong>: <code>normal_speed_every_n_steps</code> bajado de 1000
+  a 500 (más "épocas" visibles), y esas ventanas ahora usan <code>normal_time_scale=0.25</code> (4x más lento
+  que antes) en vez de velocidad <code>1.0</code>, por la misma razón que la cámara lenta final.
+- <strong>Detección automática de mejoras reales</strong> (<code>stabilization_window</code>/
+  <code>min_episodes_between_breakthroughs</code>/<code>max_breakthroughs</code>): además de las ventanas periódicas por
+  paso, cada vez que la recompensa media de los últimos <code>stabilization_window</code> episodios marca un
+  nuevo máximo (y han pasado al menos <code>min_episodes_between_breakthroughs</code> episodios desde la
+  última vez, sin superar <code>max_breakthroughs</code> en total), se graba otra ventana a la velocidad más
+  lenta (<code>final_time_scale</code>) — para ver el momento exacto de cada mejora real durante el
+  entrenamiento, no solo el resultado final. Verificado con una traza calculada a mano contra la
+  implementación real antes de fijar las aserciones del test.</p>
+<p><strong>Gotcha real encontrado al usarlo de verdad (2026-07-05): sin tope, la cámara lenta domina el
+  vídeo en tareas que convergen rápido.</strong> Con los valores iniciales (<code>min_episodes_between_breakthroughs=10</code>,
+  sin límite de repeticiones), una tanda de 5.000 pasos contra Basic (que aprende muy deprisa)
+  produjo un vídeo de <strong>4.017 fotogramas para solo 6.144 pasos entrenados</strong> — verificado extrayendo
+  fotogramas de muestra y leyendo la etiqueta quemada: entre el fotograma 200 (Paso 411) y el 1807
+  (Paso 492), un 40% del vídeo, el entrenamiento solo avanzó 81 pasos, porque la recompensa de
+  Basic mejora tan a menudo al principio que casi cada ventana de comprobación contaba como una
+  "mejora nueva". Arreglado con <code>max_breakthroughs</code> (por defecto 5, tope duro sobre el total de
+  repeticiones lentas por entrenamiento) y subiendo <code>min_episodes_between_breakthroughs</code> de 10 a 20
+  por defecto.
+- <strong>Gotcha real — condición de carrera al terminar</strong>: <code>UrcVideoRecorder</code>'s captura es una corrutina
+  en bucle infinito; sin avisarle explícitamente, seguía intentando escribir en <code>video_frames/</code>
+  después de que <code>RecordingCallback</code> ya hubiera ensamblado el vídeo y borrado esa carpeta, causando
+  un <code>DirectoryNotFoundException</code> sin capturar en Unity (verificado contra WallJump, ver más abajo).
+  Arreglado en dos frentes: (1) nuevo mensaje <code>stop_recording</code> enviado antes de tocar la carpeta de
+  fotogramas, y (2) por si ese mensaje no llega a tiempo (se envía en el siguiente intercambio del
+  comunicador, no al instante), un <code>try/catch</code> alrededor de la escritura en Unity que ignora
+  <code>DirectoryNotFoundException</code> en vez de dejarla sin capturar.</p>
+<p><strong>Verificado contra un segundo entorno real, más complejo: WallJump</strong> (escena oficial de
+ML-Agents, salto para superar un muro) — ver Fase 11 para el detalle completo de los gotchas de
+esa verificación (multi-behavior dinámico, 24 áreas paralelas por defecto, sensores múltiples).
+10.240 pasos entrenados de verdad, vídeo de <strong>1.253 fotogramas / 125 s</strong> generado sin errores.</p>
+<p><strong>Verificado manualmente de extremo a extremo</strong> (2026-07-04): entrené un checkpoint diminuto contra
+un servidor <code>socket</code> de juguete, corrí <code>urc eval</code> sobre él sin pasarle ninguna config (usó
+<code>run_info.json</code> solo), comprobé el JSON de resultado guardado, corrí <code>urc compare</code> con la ruta del
+checkpoint y con la carpeta del run (ambas formas resuelven al mismo resultado), y <code>urc record</code>
+generó un <code>.jsonl</code> con una línea por paso. Automatizado después en <code>tests/test_cli_eval.py</code>,
+<code>tests/test_cli_compare.py</code> y <code>tests/test_cli_record.py</code>.</p>
+<p><strong>Ajuste a un fixture de test compartido</strong>: <code>toy_env_server</code> (usado desde la Fase 5) solo aceptaba
+una conexión; evaluar/grabar después de entrenar contra el mismo host/puerto necesita una segunda
+conexión al mismo servidor. Se cambió a aceptar conexiones en bucle — más fiel además a cómo se
+comportaría un entorno real, que sigue disponible entre comandos.</p>
+<h3 id="fase-9-visualizacion-y-observabilidad">Fase 9 — Visualización y observabilidad ✅<a class="headerlink" href="#fase-9-visualizacion-y-observabilidad" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Integración TensorBoard (default): <code>SB3Backend.train</code> pasa <code>tensorboard_log</code> a SB3 cuando
+      <code>logging.backend == "tensorboard"</code> (el default) — SB3 ya sabe escribir ahí solo, no hubo que
+      construir nada de logging desde cero. <code>logging.backend == "none"</code> lo desactiva.</li>
+<li>[x] Weights&amp;Biases (opcional, vía extra <code>wandb</code>): <code>logging.backend == "wandb"</code> inicializa un run
+      de wandb con <code>sync_tensorboard=True</code> (por eso también activa <code>tensorboard_log</code>, es como está
+      pensada la propia integración oficial de wandb con SB3) y añade su <code>WandbCallback</code>. Probado
+      de verdad con <code>WANDB_MODE=disabled</code> (sin red ni credenciales) — cablea correctamente, aunque
+      el dashboard real de wandb.ai no se puede verificar en este entorno.</li>
+<li>[x] <code>urc visualize [logdir]</code>: lanza TensorBoard (vía su API embebible, <code>tensorboard.program</code>) y
+      devuelve la URL, igual que el comando <code>tensorboard --logdir ...</code> de siempre.</li>
+<li>[x] "Live view" — implementado con tres piezas reales, no una sola "gran" funcionalidad nueva:</li>
+<li><strong>Barra de progreso en terminal</strong>: <code>training.progress_bar: true</code> (nuevo campo, default
+     <code>false</code> para no ensuciar salida no interactiva/CI) activa <code>progress_bar=True</code> de SB3
+     (tqdm/rich), ya verificado con un entrenamiento real.</li>
+<li><strong>Dashboard en vivo</strong>: <code>urc visualize</code> mientras <code>urc train</code> corre en otra terminal ya
+     actualiza los gráficos en tiempo real — es como funciona TensorBoard normalmente, no hace
+     falta nada especial de nuestra parte.</li>
+<li><strong>Ver al agente de verdad</strong>: con el bridge <code>mlagents</code> conectado al editor de Unity (sin
+     <code>--no-graphics</code>), el usuario ya ve al agente entrenando en la ventana del editor mientras
+     <code>urc train</code> corre — otra vez, gratis por cómo funciona ML-Agents, no requiere código nuevo.</li>
+</ul>
+<p><strong>Por qué no una sola función "live view"</strong>: streaming de vídeo genérico desde cualquier bridge
+habría sido mucho esfuerzo (captura de píxeles, codificación, transporte) para duplicar algo que
+ML-Agents y TensorBoard ya resuelven mejor cada uno en su terreno. Documentar cómo combinarlos era
+más valioso que construir una alternativa propia peor.</p>
+<p><strong>Verificado manualmente de extremo a extremo</strong> (2026-07-04): entrené con <code>logging.backend:
+tensorboard</code> (default) y <code>training.progress_bar: true</code> contra un servidor <code>socket</code> de juguete —
+la barra de progreso se vio en la terminal, y aparecieron archivos <code>events.out.tfevents.*</code> reales
+bajo <code>runs/default/tensorboard/</code>. Lancé <code>_launch_tensorboard</code> contra esos logs reales y comprobé
+con una petición HTTP real que el dashboard respondía (200 OK). Probé también el wiring de wandb
+con <code>WANDB_MODE=disabled</code>. Automatizado después en <code>tests/test_sb3_logging.py</code> y
+<code>tests/test_cli_visualize.py</code>.</p>
+<p><strong>Ajuste a la estructura de repositorio propuesta (sección 7)</strong>: igual que <code>envs/</code> en la Fase 7, la
+carpeta <code>logging/</code> planeada ahí tampoco ha hecho falta. El logging de TensorBoard/wandb se apoya en
+mecanismos ya integrados en el propio bucle de entrenamiento de SB3 (<code>tensorboard_log</code>,
+<code>WandbCallback</code>), así que vive junto a <code>SB3Backend</code> en <code>algorithms/sb3_base.py</code> — es lógica
+específica de SB3, no algo agnóstico de algoritmo que mereciera su propio paquete. Se ha eliminado
+la carpeta <code>logging/</code> vacía que quedó de la Fase 1.</p>
+<h3 id="fase-10-extensibilidad-multi-lenguaje-real">Fase 10 — Extensibilidad multi-lenguaje real ✅<a class="headerlink" href="#fase-10-extensibilidad-multi-lenguaje-real" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Especificación formal del protocolo out-of-process:
+      <a href="https://github.com/javiers2004/Unity-RL-Controller/blob/master/PROTOCOL.md"><code>PROTOCOL.md</code></a>. No se hizo
+      en protobuf/JSON schema formal como decía el borrador original — es Markdown con tablas y
+      ejemplos. Motivo: el protocolo (líneas JSON, <code>method</code>/<code>params</code>/<code>result</code>/<code>error</code>) es lo
+      bastante simple como para que un JSON Schema formal añadiera ceremonia sin aportar claridad
+      extra frente a una tabla + ejemplos, que además sirve directamente como guía de uso (ver
+      siguiente punto) en el mismo documento.</li>
+<li>[x] Implementación de referencia en otro lenguaje: <strong>C# real, no un stub</strong>
+      (<a href="https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/csharp_bridge/Program.cs"><code>examples/csharp_bridge/Program.cs</code></a>) — compilado con
+      <code>csc.exe</code> (el compilador que ya trae .NET Framework en Windows, sin instalar el SDK de
+      .NET) y verificado de extremo a extremo contra un <code>ExternalProcessBridge</code> real, incluyendo
+      <strong>entrenar un PPO completo usando el ejecutable de C# como entorno</strong> (checkpoints y logs de
+      TensorBoard reales generados a partir de ahí). Alcance: solo bridges — los algoritmos
+      siguen siendo plugins de Python (aclarado explícitamente en <code>PROTOCOL.md</code>, para que no se
+      lea como "puedes escribir tu algoritmo de entrenamiento en C#", que no es cierto).</li>
+<li>[x] Documentación "cómo escribir tu propio plugin": integrada en <code>PROTOCOL.md</code> (sección 6,
+      checklist) en vez de en un documento aparte — spec y guía de uso son la misma audiencia
+      leyendo en el mismo momento, separarlas solo habría fragmentado la información.</li>
+</ul>
+<p><strong>Test automatizado real, no solo un ejemplo documentado</strong>: <code>tests/test_csharp_reference_bridge.py</code>
+compila <code>Program.cs</code> con <code>csc.exe</code> y lo conecta con un <code>ExternalProcessBridge</code> de verdad en cada
+ejecución — no es un mock de "cómo se comportaría C#", es C# de verdad compilado y ejecutado. Se
+salta limpiamente (<code>pytest.mark.skipif</code>) si no hay <code>csc.exe</code> disponible, p. ej. en el runner Linux
+de CI, igual que ya hacíamos con <code>mlagents_envs</code>/<code>stable_baselines3</code> cuando no están instalados.</p>
+<p><strong>Bug de documentación evitado</strong>: al escribir el checklist de <code>PROTOCOL.md</code> estuve a punto de decir
+que un bridge propio funciona con <code>urc env launch</code> "igual que con ML-Agents" — falso: <code>urc env
+launch</code> está <em>hardcodeado</em> a <code>MLAgentsBridge</code>, no resuelve el bridge desde el registry como sí
+hacen <code>urc train</code>/<code>urc eval</code>/<code>urc record</code>. Corregido antes de dejarlo escrito; es una limitación
+real que queda anotada, no algo que arreglar en esta fase (<code>env launch</code> nació en la Fase 3 pensado
+solo para el smoke test contra Unity, no como comando genérico).</p>
+<h3 id="fase-11-calidad-empaquetado-y-publicacion">Fase 11 — Calidad, empaquetado y publicación ✅<a class="headerlink" href="#fase-11-calidad-empaquetado-y-publicacion" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Cobertura de tests (unitarios + integración con builds headless en CI) — el workflow
+      <code>unity-integration.yml</code> descarga un build headless real (Linux, escena Basic de ML-Agents)
+      de un GitHub Release y ejecuta <code>tests/test_unity_headless_integration.py</code> contra él de
+      verdad. <strong><code>1 passed</code></strong> en CI — ver nota abajo para el proceso de depuración real que hizo
+      falta para llegar ahí.</li>
+<li>[x] Sitio de documentación pública (mkdocs, tema Material): <code>mkdocs.yml</code> +
+      <code>docs/{index,quickstart,cli-reference,examples}.md</code> + 3 tutoriales
+      (<code>docs/tutorials/{write-a-bridge,write-an-algorithm,curriculum}.md</code>). <code>ROADMAP.md</code>/
+      <code>PROTOCOL.md</code>/<code>CHANGELOG.md</code> se transcluyen tal cual (<code>pymdownx.snippets</code>) en vez de
+      duplicarse — una sola fuente de verdad. Verificado con <code>mkdocs build --strict</code> sin avisos.
+      Workflow <code>.github/workflows/docs.yml</code> listo para publicar a GitHub Pages en cada push a
+      <code>docs/</code>/<code>mkdocs.yml</code>; falta que el usuario active Pages en la configuración del repo (GitHub
+      Settings → Pages → Source: rama <code>gh-pages</code>) — no lo puedo hacer yo.</li>
+<li>[x] Versionado semántico + <code>CHANGELOG.md</code> (formato Keep a Changelog, una sección por fase).
+      Empaquetado verificado de verdad: <code>LICENSE</code> (MIT), metadata completa de <code>pyproject.toml</code>
+      (clasificadores, URLs), <code>python -m build</code> + <code>twine check</code> en verde, e instalación del wheel
+      resultante en un venv limpio con <code>urc version</code>/<code>urc config show</code> funcionando. <strong>No publicado
+      a PyPI</strong> — decisión explícita del usuario: dejar el paquete listo, publicar el "de verdad"
+      es un paso suyo (necesita su propia cuenta/API key de PyPI).</li>
+<li>[x] 4 ejemplos end-to-end en <code>examples/</code>, cubriendo bridges/algoritmos/mapas distintos:</li>
+<li><code>toy_reach_target/</code>: entorno de juguete autocontenido (socket TCP, sin Unity), PPO —
+    <strong>verificado aprendiendo la tarea de verdad</strong> (100% de éxito, 8 pasos por episodio, el óptimo).</li>
+<li><code>csharp_bridge/</code>: el bridge de referencia en C# de la Fase 10, ahora con <code>urc.yaml</code> propio,
+    entrenando con <strong>SAC</strong> (acciones continuas) — verificado end-to-end.</li>
+<li><code>unity_basic_ppo/</code>: Unity ML-Agents real (escena Basic), PPO (acciones discretas) —
+    <strong>verificado end-to-end contra el editor de Unity de verdad</strong> (2026-07-04): <code>urc train</code>
+    conectado al editor en Play (puerto 5004), 50.000 pasos, duración media de episodio bajando de
+    19.9 a 7.0 pasos y recompensa media subiendo de 0.67 a 0.93 a lo largo del entrenamiento;
+    <code>urc eval --episodes 20</code> sobre el checkpoint final confirmó <strong>0.930 ± 0.000 de recompensa
+    media, 7.0 pasos de duración</strong> — convergencia real y consistente, no ruido.</li>
+<li><code>walljump_ppo/</code>: escena oficial <strong>WallJump</strong> de ML-Agents (agente que salta para superar un
+    muro), PPO con acciones <code>MultiDiscrete</code> — elegida para probar el vídeo automático contra un
+    entorno con más movimiento que Basic (ver Fase 8). <strong>Verificado end-to-end</strong> (2026-07-05):
+    10.240 pasos, duración media de episodio bajando de 89.8 a 53.9 pasos; vídeo de progreso de
+    1.253 fotogramas generado sin errores.</li>
+</ul>
+<p><strong>Tres gotchas reales encontrados preparando WallJump</strong> (ninguno es un bug de <code>urc</code> en sí, salvo
+  el tercero):
+  1. <strong>Comportamiento dinámico según la dificultad</strong>: <code>WallJumpAgent.cs</code> elige aleatoriamente cada
+     episodio entre "sin muro"/"muro pequeño" (comportamiento <code>SmallWallJump</code>) y "muro alto + bloque
+     que empujar" (comportamiento <code>BigWallJump</code>) — con el tiempo suficiente, ambos acaban
+     registrándose, y <code>MLAgentsBridge</code> solo soporta un behavior por entorno (limitación deliberada,
+     Fase 3). Arreglado en el propio script (copia local del usuario, no en el repo de <code>urc</code>):
+     limitar <code>Random.Range(0, 5)</code> a <code>Random.Range(0, 2)</code> en <code>Initialize()</code>/<code>OnEpisodeBegin()</code>, para
+     que nunca elija la variante de muro alto.
+  2. <strong>24 áreas de entrenamiento en paralelo por defecto</strong>: como casi todos los ejemplos oficiales
+     de ML-Agents, la escena viene preparada para <code>mlagents-learn</code> (entrenamiento masivo en
+     paralelo), con 24 copias de <code>WallJumpArea</code> — <code>MLAgentsBridge</code> solo soporta un agente activo.
+     Desactivar los GameObjects duplicados en el Editor <strong>no bastaba</strong> (un script de diagnóstico
+     independiente, conectando directo con <code>mlagents_envs.UnityEnvironment</code> y leyendo
+     <code>decision_steps.agent_id</code>, siguió reportando 24 IDs de agente tras "desactivar" 23 áreas —
+     causa exacta sin determinar, posiblemente relacionada con cómo Unity/ML-Agents inicializa
+     agentes ya cacheados). <strong>Solución que sí funcionó</strong>: borrar las 23 áreas de más en vez de
+     desactivarlas.
+  3. <strong>Múltiples sensores de observación</strong>: ver la ampliación de <code>MLAgentsBridge</code> en la Fase 3 —
+     este fue el hallazgo que llevó a soportar varios sensores concatenados en el bridge en sí, no
+     un parche puntual para este ejemplo.</p>
+<p><strong>Bug real encontrado montando el ejemplo de C#</strong>: <code>subprocess.Popen</code> con una ruta relativa que
+contiene separadores de carpeta fallaba con <code>FileNotFoundError</code> en esta instalación de Python de
+Microsoft Store, aunque el archivo existiera de verdad (<code>CreateProcess</code> no la resuelve contra el
+directorio de trabajo igual que las APIs de archivo normales de Python). Arreglado de raíz en
+<code>urc.core.rpc._resolve_executable_path</code>: convierte a absoluta cualquier ruta con separador antes
+de lanzar el subproceso, dejando los nombres sueltos (<code>"python"</code>, <code>"node"</code>) intactos para que se
+resuelvan por <code>PATH</code> como siempre. Sin este fix, <code>bridge_options.command</code> con rutas relativas
+habría fallado de forma intermitente según la instalación de Python de cada usuario.</p>
+<p><strong>Sobre "CI con builds headless de Unity"</strong>: se investigó el enfoque "montarlo dentro de GitHub
+Actions" (game-ci) y se descartó — el proyecto de ejemplo de ML-Agents referencia
+<code>com.unity.ml-agents</code> con una ruta relativa (<code>file:../../com.unity.ml-agents</code>), así que haría falta
+vendorizar buena parte de ese monorepo en el nuestro, más una licencia de Unity como secreto de
+GitHub, más riesgo de que la imagen Docker de la versión exacta de Unity no esté disponible. Se
+optó en su lugar por: el usuario exporta un build headless de Linux una vez desde su propio Editor
+(Unity soporta cross-compilar a Linux sin salir de Windows, solo añadiendo el módulo "Linux Build
+Support" en Unity Hub), lo sube como asset de un GitHub Release (<code>unity-basic-linux-v1</code>), y el CI
+simplemente lo descarga y ejecuta un smoke test real contra él. Sin licencias de Unity en GitHub
+Actions, sin vendorizar ml-agents. <strong>Completado y verificado: <code>1 passed</code> en <code>ubuntu-latest</code>.</strong></p>
+<p>Tres problemas reales aparecieron montando esto, todos arreglados de raíz (no con parches):
+1. <strong>Workflow que fallaba en silencio</strong>: si el <code>.x86_64</code> no se encontraba dentro del zip
+   descomprimido, el test se saltaba (<code>skipped</code>) en vez de fallar, y el job seguía saliendo en
+   verde — una señal de CI falsa y peligrosa. Arreglado buscando el ejecutable recursivamente
+   (el zip metía el build dentro de una carpeta contenedora) y con <code>exit 1</code> explícito si no
+   aparece ninguno.
+2. <strong><code>UnityPlayer.so</code> que faltaba en el build subido</strong>: el ejecutable arrancaba y moría con
+   "return code 127" / <code>error while loading shared libraries: UnityPlayer.so: cannot open shared
+   object file</code>. Unity coloca ese <code>.so</code> junto al <code>.x86_64</code> en un build Linux, aparte de la carpeta
+   <code>_Data/</code>; se quedó fuera del zip subido al Release la primera vez. Arreglado re-empaquetando el
+   build con <code>UnityPlayer.so</code> incluido.
+3. <strong>SIGSEGV al hacer <code>reset()</code></strong>: con el <code>.so</code> ya presente, el motor inicializaba del todo
+   (versión, físicas, <code>NullGfxDevice</code>, comunicador de ML-Agents registrado) pero el proceso moría
+   con signal 11 justo después, durante el primer intercambio del comunicador. Causa: en
+   <code>ubuntu-latest</code> no hay ningún servidor X, y el player de Unity en Linux necesita poder conectar
+   a uno (aunque sea virtual) para terminar de inicializarse sin crashear, incluso en modo
+   <code>-nographics</code>/<code>-batchmode</code>. Arreglado añadiendo un paso que instala <code>xvfb</code>, levanta un display
+   virtual (<code>Xvfb :99 -screen 0 1024x768x24 &amp;</code>) y exporta <code>DISPLAY=:99</code> antes de lanzar el test.</p>
+<p>Un cuarto problema, ya no de infraestructura sino de contrato: una vez el test llegaba a <code>step()</code>,
+fallaba con <code>assert False</code> porque <code>StepResult.reward</code> está declarado como <code>float</code> pero
+<code>MLAgentsBridge.step()</code> pasaba el <code>np.float32</code> de <code>mlagents_envs</code> sin convertir — no se notaba con
+los bridges de prueba (mocks con floats nativos) ni con <code>toy_reach_target</code>/<code>csharp_bridge</code> (no usan
+<code>MLAgentsBridge</code>), solo saltó al ejecutar contra Unity real por primera vez. Arreglado casteando a
+<code>float(...)</code> en <code>mlagents_bridge.py</code>.</p>
+<p>Con esto verificado un par de veces seguidas, <code>unity-integration.yml</code> pasó de <code>workflow_dispatch</code>
+únicamente a disparo automático en <code>push</code>/<code>pull_request</code> (restringido por <code>paths:</code> a los archivos
+que de verdad afectan al bridge de ML-Agents, para no descargar el build de ~28 MB en cada push).</p>
+<h3 id="fase-12-pulido-final-y-comunidad">Fase 12 — Pulido final y comunidad ✅<a class="headerlink" href="#fase-12-pulido-final-y-comunidad" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] README con demo y badges: badges reales de CI/Unity integration/Docs (generados por los
+      workflows existentes, no estáticos), licencia y versión de Python. Sección "Demo" con una
+      transcripción de terminal real (<code>urc train</code> + <code>urc eval</code> contra <code>toy_reach_target</code>,
+      re-ejecutada y verificada, no inventada). <strong>No incluye un GIF visual del agente entrenando
+      en Unity</strong> — eso es una grabación de pantalla, no algo generable desde aquí; queda
+      documentado como aportación abierta en <code>CONTRIBUTING.md</code>.</li>
+<li>[x] <code>CONTRIBUTING.md</code>: cómo configurar el entorno, qué ejecutar antes de un PR, dónde encaja cada
+      tipo de cambio (bridge/algoritmo/ejemplo/documentación), estilo de commits, y cómo aportar
+      una demo visual. <code>CODE_OF_CONDUCT.md</code>: adaptación traducida del Contributor Covenant v2.1,
+      con reporte vía Security Advisory privado del repo (se evita publicar un email personal).</li>
+<li>[~] Recoger feedback de uso real y priorizar iteración siguiente — <strong>no es una tarea que se
+      pueda completar de una vez</strong>, es un proceso continuo que empieza cuando haya usuarios reales
+      (p. ej. tras publicar a PyPI). El mecanismo ya está listo: GitHub Issues + <code>CONTRIBUTING.md</code>
+      explicando cómo reportar y dónde encaja cada propuesta; queda como trabajo permanente, no
+      como checkbox cerrable.</li>
+</ul>
+<hr />
+<h2 id="9-consideraciones-transversales">9. Consideraciones transversales<a class="headerlink" href="#9-consideraciones-transversales" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Testing</strong>: separar tests unitarios (rápidos, sin Unity) de tests de integración (requieren un build headless de Unity; correrlos en CI aparte o marcarlos como manuales/locales).</li>
+<li><strong>Rendimiento</strong>: soportar entornos vectorizados/paralelos desde el diseño del <code>BridgeAdapter</code>, no como parche posterior.</li>
+<li><strong>Seguridad</strong>: cargar plugins de terceros implica ejecución de código arbitrario — documentar el riesgo y, si se publica como librería pública, considerar algún tipo de sandboxing o al menos advertencias claras.</li>
+<li><strong>Compatibilidad hacia atrás</strong>: una vez publicada la v1 del contrato de plugins, cambiarlo rompe a terceros — versionar el contrato explícitamente (<code>contract_version</code>).</li>
+<li><strong>Multiplataforma</strong>: decidir pronto si los builds headless de Unity se soportan en Windows/Linux/ambos, ya que afecta al diseño de CI.</li>
+</ul>
+<hr />
+<h2 id="10-decisiones-pendientes">10. Decisiones pendientes<a class="headerlink" href="#10-decisiones-pendientes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>[DECISIÓN PENDIENTE]</code> Nombre final del proyecto/comando CLI.</li>
+<li><code>[DECISIÓN PENDIENTE]</code> Licencia open-source.</li>
+<li>~~<code>[DECISIÓN PENDIENTE]</code> Protocolo exacto para plugins out-of-process~~ → <strong>Decidido en Fase 2</strong>: JSON-RPC sobre stdio (líneas de JSON por stdin/stdout). Motivo: cualquier lenguaje sabe leer/escribir JSON por stdio sin dependencias extra, frente a gRPC que exige toolchain de protobuf en cada lenguaje. Sigue siendo "solo una implementación más" del contrato <code>BridgeAdapter</code>/<code>AlgorithmBackend</code> — si en el futuro hace falta más rendimiento, se puede añadir un adapter gRPC alternativo sin tocar el core. La especificación formal del protocolo (JSON schema) queda para la Fase 10.</li>
+<li><code>[DECISIÓN PENDIENTE]</code> Soporte multiplataforma desde el día 1 o empezar solo Windows (entorno actual del usuario) y generalizar después.</li>
+</ul>
+<hr />
+<h2 id="11-proximos-pasos-inmediatos">11. Próximos pasos inmediatos<a class="headerlink" href="#11-proximos-pasos-inmediatos" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Cerrar las decisiones pendientes de la Fase 0 (aunque sea con un valor "provisional" para no bloquear).</li>
+<li>Ejecutar la Fase 1 (esqueleto del repositorio) — es la base para todo lo demás.</li>
+<li>Volver a este documento después de cada fase para marcar checkboxes y anotar aprendizajes o cambios de rumbo.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

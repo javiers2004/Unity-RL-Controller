@@ -1,0 +1,1187 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Controla entrenamientos de Reinforcement Learning en Unity desde la terminal.">
+      
+      
+      
+      
+        <link rel="prev" href="../protocol/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Changelog - Unity RL Controller (urc)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="Unity RL Controller (urc)" class="md-header__button md-logo" aria-label="Unity RL Controller (urc)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Unity RL Controller (urc)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/javiers2004/Unity-RL-Controller" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    javiers2004/Unity-RL-Controller
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Unity RL Controller (urc)" class="md-nav__button md-logo" aria-label="Unity RL Controller (urc)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Unity RL Controller (urc)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/javiers2004/Unity-RL-Controller" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    javiers2004/Unity-RL-Controller
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guía rápida
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referencia de comandos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ejemplos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutoriales
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutoriales
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/write-a-bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Escribir un bridge en otro lenguaje
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/write-an-algorithm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Escribir un algoritmo propio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/curriculum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Currículo y domain randomization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diseño y roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo out-of-process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Unreleased]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ampliacion-posterior-a-la-fase-8-video-automatico-del-progreso-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ampliación posterior a la Fase 8 — vídeo automático del progreso de entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-12-pulido-final-y-comunidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 12 — Pulido final y comunidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-11-calidad-empaquetado-y-publicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 11 — Calidad, empaquetado y publicación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-10-extensibilidad-multi-lenguaje-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 10 — Extensibilidad multi-lenguaje real
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-9-visualizacion-y-observabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 9 — Visualización y observabilidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-8-evaluacion-y-benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 8 — Evaluación y benchmarking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-7-entornos-y-mapas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 7 — Entornos y mapas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-6-algoritmos-intercambiables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 6 — Algoritmos intercambiables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-5-cli-minimo-viable-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 5 — CLI mínimo viable de entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4 — Sistema de configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-bridge-por-defecto-unity-ml-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3 — Bridge por defecto: Unity ML-Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-contratos-y-sistema-de-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2 — Contratos y sistema de plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-esqueleto-del-repositorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1 — Esqueleto del repositorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Unreleased]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ampliacion-posterior-a-la-fase-8-video-automatico-del-progreso-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ampliación posterior a la Fase 8 — vídeo automático del progreso de entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-12-pulido-final-y-comunidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 12 — Pulido final y comunidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-11-calidad-empaquetado-y-publicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 11 — Calidad, empaquetado y publicación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-10-extensibilidad-multi-lenguaje-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 10 — Extensibilidad multi-lenguaje real
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-9-visualizacion-y-observabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 9 — Visualización y observabilidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-8-evaluacion-y-benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 8 — Evaluación y benchmarking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-7-entornos-y-mapas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 7 — Entornos y mapas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-6-algoritmos-intercambiables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 6 — Algoritmos intercambiables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-5-cli-minimo-viable-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 5 — CLI mínimo viable de entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-sistema-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4 — Sistema de configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-bridge-por-defecto-unity-ml-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3 — Bridge por defecto: Unity ML-Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-contratos-y-sistema-de-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2 — Contratos y sistema de plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-esqueleto-del-repositorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1 — Esqueleto del repositorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p>Formato basado en <a href="https://keepachangelog.com/es-ES/1.0.0/">Keep a Changelog</a>. Este proyecto
+todavía no ha publicado ninguna versión estable (sigue en <code>0.x</code>): mientras tanto, cada fase del
+<a href="https://github.com/javiers2004/Unity-RL-Controller/blob/master/ROADMAP.md">ROADMAP</a> se documenta aquí como si fuera una entrada de versión, aunque no se haya
+publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).</p>
+<h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="ampliacion-posterior-a-la-fase-8-video-automatico-del-progreso-de-entrenamiento">Ampliación posterior a la Fase 8 — vídeo automático del progreso de entrenamiento<a class="headerlink" href="#ampliacion-posterior-a-la-fase-8-video-automatico-del-progreso-de-entrenamiento" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Nuevo <code>unity/UrcVideoRecorder/UrcVideoRecorder.cs</code>: script para la escena de Unity que captura
+  fotogramas (<code>Texture2D.ReadPixels</code>) y expone <code>Time.timeScale</code> a Python.</li>
+<li>Nuevo side channel <code>RecordingControlChannel</code> + <code>MLAgentsBridge.set_time_scale</code>/<code>start_recording</code>.</li>
+<li>Nuevo <code>RecordingCallback</code> (SB3): cámara rápida durante el grueso del entrenamiento, ventanas a
+  velocidad normal cada N pasos, episodios finales normales, y ensamblado a <code>.mp4</code> con <code>imageio</code>.</li>
+<li>Nueva sección de config <code>recording:</code> (<code>enabled</code>, <code>fast_forward_speed</code>,
+  <code>normal_speed_every_n_steps</code>, <code>final_episodes</code>, <code>fps</code>, <code>keep_frames</code>) y nuevo extra <code>video</code>.</li>
+<li><strong>Verificado de verdad contra Unity real</strong> (escena Basic): 453 fotogramas / 45.3 s con contenido
+  genuino, tras encontrar y arreglar cuatro bugs reales — el más interesante: la escena Basic
+  resetea cada episodio recargando la escena entera, destruyendo y recreando el componente
+  constantemente; arreglado con campos <code>static</code> que sobreviven a la recarga. Detalle completo en
+  <code>ROADMAP.md</code>, Fase 8.</li>
+<li>Documentado en <code>examples/unity_basic_ppo/README.md</code>.</li>
+<li>Ampliado (2026-07-05): cámara súper lenta de verdad en los episodios finales
+  (<code>final_time_scale</code>), etiqueta de paso quemada en cada fotograma, ventanas periódicas más lentas
+  y frecuentes (<code>normal_time_scale</code>, <code>normal_speed_every_n_steps</code> más bajo), detección automática
+  de mejoras reales de recompensa (<code>stabilization_window</code>/<code>min_episodes_between_breakthroughs</code>) que
+  graba otra ventana lenta en el momento exacto de cada avance, y arreglo de una condición de
+  carrera real al terminar (<code>stop_recording</code> + <code>try/catch</code> en Unity — sin esto, la captura seguía
+  escribiendo en la carpeta de fotogramas después de que Python ya la hubiera borrado).</li>
+<li><code>MLAgentsBridge</code>: soporte para múltiples sensores de observación (se concatenan en un único
+  vector) — encontrado y arreglado verificando el vídeo contra un segundo entorno real más
+  complejo, <code>examples/walljump_ppo/</code> (escena WallJump de ML-Agents, PPO con acciones
+  <code>MultiDiscrete</code>), verificado end-to-end (10.240 pasos, vídeo de 1.253 fotogramas).</li>
+<li>Fix: sin <code>max_breakthroughs</code> (nuevo, por defecto 5), en tareas que convergen rápido (Basic) la
+  detección de mejoras se disparaba tan a menudo que la cámara lenta dominaba casi todo el vídeo —
+  verificado: 4.017 fotogramas para solo 6.144 pasos entrenados. <code>min_episodes_between_breakthroughs</code>
+  también subido de 10 a 20 por defecto.</li>
+</ul>
+<h3 id="fase-12-pulido-final-y-comunidad">Fase 12 — Pulido final y comunidad<a class="headerlink" href="#fase-12-pulido-final-y-comunidad" title="Permanent link">&para;</a></h3>
+<ul>
+<li>README: badges reales (CI, Unity integration, Docs, licencia, versión de Python) y una sección
+  "Demo" con una transcripción de terminal real y verificada (<code>urc train</code>/<code>urc eval</code> contra
+  <code>toy_reach_target</code>).</li>
+<li><code>CONTRIBUTING.md</code>: entorno de desarrollo, checks antes de un PR, dónde encaja cada tipo de
+  cambio, y cómo aportar una demo visual (grabación de pantalla, fuera del alcance de este repo).</li>
+<li><code>CODE_OF_CONDUCT.md</code>: adaptación del Contributor Covenant v2.1.</li>
+</ul>
+<h3 id="fase-11-calidad-empaquetado-y-publicacion">Fase 11 — Calidad, empaquetado y publicación<a class="headerlink" href="#fase-11-calidad-empaquetado-y-publicacion" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>LICENSE</code> (MIT) y metadata de empaquetado completa (clasificadores, URLs del proyecto).</li>
+<li>Paquete verificado con <code>python -m build</code> + <code>twine check</code> + instalación en un venv limpio.</li>
+<li>Sitio de documentación pública (mkdocs).</li>
+<li>Ejemplos end-to-end: entorno de juguete autocontenido (sin Unity), bridge en C#, y Unity real.</li>
+<li>CI ampliado con un build headless real de Unity descargado desde un Release de GitHub —
+  verificado en <code>ubuntu-latest</code> (<code>1 passed</code>), tras arreglar un SIGSEGV al inicializar el player
+  (faltaba un servidor X; solucionado con <code>Xvfb</code>) y un <code>UnityPlayer.so</code> ausente del build subido.</li>
+<li>Fix: <code>_resolve_executable_path</code> en <code>core/rpc.py</code> — rutas relativas con separador fallaban al
+  lanzar subprocesos en instalaciones de Python de Microsoft Store en Windows.</li>
+<li>Fix: <code>MLAgentsBridge.step()</code> devolvía <code>reward</code> como <code>np.float32</code> en vez de <code>float</code>, incumpliendo
+  el contrato de <code>StepResult</code>.</li>
+</ul>
+<h3 id="fase-10-extensibilidad-multi-lenguaje-real">Fase 10 — Extensibilidad multi-lenguaje real<a class="headerlink" href="#fase-10-extensibilidad-multi-lenguaje-real" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>PROTOCOL.md</code>: especificación completa del protocolo out-of-process (bridges en cualquier
+  lenguaje) — transporte, formato de líneas, métodos, tipos.</li>
+<li>Bridge de referencia real en C# (<code>examples/csharp_bridge/</code>), compilado con el compilador de
+  .NET Framework de Windows (sin instalar el SDK), verificado contra un <code>ExternalProcessBridge</code>
+  real y usado para entrenar un PPO completo.</li>
+</ul>
+<h3 id="fase-9-visualizacion-y-observabilidad">Fase 9 — Visualización y observabilidad<a class="headerlink" href="#fase-9-visualizacion-y-observabilidad" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Integración real con TensorBoard (<code>logging.backend: tensorboard</code>, el default) y con
+  Weights&amp;Biases (<code>logging.backend: wandb</code>, extra opcional <code>sb3</code>/<code>wandb</code>).</li>
+<li><code>urc visualize</code>: lanza TensorBoard apuntando a los logs de un run.</li>
+<li>Barra de progreso en vivo en terminal (<code>training.progress_bar</code>).</li>
+</ul>
+<h3 id="fase-8-evaluacion-y-benchmarking">Fase 8 — Evaluación y benchmarking<a class="headerlink" href="#fase-8-evaluacion-y-benchmarking" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>urc eval &lt;checkpoint&gt;</code>: reward medio, tasa de éxito, duración, guardado en <code>eval_*.json</code>.</li>
+<li><code>urc compare &lt;path...&gt;</code>: compara métricas entre checkpoints/runs.</li>
+<li><code>urc record &lt;checkpoint&gt;</code>: graba la trayectoria de un episodio en <code>.jsonl</code>.</li>
+<li><code>run_info.json</code> junto a los checkpoints, para que <code>eval</code>/<code>record</code> no obliguen a repetir la
+  config usada al entrenar.</li>
+</ul>
+<h3 id="fase-7-entornos-y-mapas">Fase 7 — Entornos y mapas<a class="headerlink" href="#fase-7-entornos-y-mapas" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>EnvironmentSpec</code> completo: <code>build_path</code>, <code>bridge_options</code>, <code>parameters</code> (domain randomization
+  estática), <code>curriculum</code> (progresión automática por episodios).</li>
+<li><code>urc env list / describe / create</code>, y <code>urc env launch --env &lt;nombre&gt;</code>.</li>
+<li><code>BridgeAdapter.set_parameters()</code>: nuevo método (no abstracto, retrocompatible) implementado de
+  verdad en <code>MLAgentsBridge</code> (side channel de ML-Agents) y en los bridges JSON-RPC.</li>
+</ul>
+<h3 id="fase-6-algoritmos-intercambiables">Fase 6 — Algoritmos intercambiables<a class="headerlink" href="#fase-6-algoritmos-intercambiables" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>sb3-sac</code>: segundo algoritmo real (solo acciones continuas), compartiendo mecánica de
+  entrenar/reanudar/checkpoint con <code>sb3-ppo</code> vía una base común.</li>
+<li>Los plugins de terceros (<code>./plugins/</code>, entry points) se cargan de verdad desde el CLI
+  (<code>urc train</code>, <code>urc algo list/info</code>) — existían desde la Fase 2 pero nadie los invocaba.</li>
+<li><code>urc algo list / info</code>.</li>
+</ul>
+<h3 id="fase-5-cli-minimo-viable-de-entrenamiento">Fase 5 — CLI mínimo viable de entrenamiento<a class="headerlink" href="#fase-5-cli-minimo-viable-de-entrenamiento" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>urc train</code>, uniendo bridge + config + algoritmo. Algoritmo por defecto: <strong>PPO de
+  Stable-Baselines3</strong> (<code>sb3-ppo</code>) sobre un wrapper Gymnasium (<code>BridgeGymEnv</code>), no el trainer
+  nativo de ML-Agents (que no compone con nuestro <code>BridgeAdapter</code>).</li>
+<li>Checkpointing a disco y reanudar entrenamiento (<code>--resume</code>).</li>
+<li><code>urc doctor</code> (Python, GPU/CUDA, dependencias opcionales) y <code>urc init</code> (scaffolding de proyecto).</li>
+<li><code>Registry.register_lazy</code>: bridges/algoritmos con dependencias opcionales pesadas se importan
+  bajo demanda.</li>
+</ul>
+<h3 id="fase-4-sistema-de-configuracion">Fase 4 — Sistema de configuración<a class="headerlink" href="#fase-4-sistema-de-configuracion" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>UrcConfig</code> (pydantic v2) con resolución jerárquica: defaults de la librería → <code>urc.yaml</code> del
+  proyecto → YAML de experimento → overrides <code>--set</code>.</li>
+<li><code>urc config show / validate / diff</code>.</li>
+</ul>
+<h3 id="fase-3-bridge-por-defecto-unity-ml-agents">Fase 3 — Bridge por defecto: Unity ML-Agents<a class="headerlink" href="#fase-3-bridge-por-defecto-unity-ml-agents" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>MLAgentsBridge</code>, envolviendo <code>mlagents_envs.UnityEnvironment</code> — verificado contra Unity real
+  (editor y modo headless).</li>
+<li><code>SocketBridge</code> (TCP), además del <code>ExternalProcessBridge</code> (subproceso) de la Fase 2: dos
+  transportes de ejemplo compartiendo el mismo protocolo JSON-RPC por líneas.</li>
+<li><code>urc env launch</code>.</li>
+</ul>
+<h3 id="fase-2-contratos-y-sistema-de-plugins">Fase 2 — Contratos y sistema de plugins<a class="headerlink" href="#fase-2-contratos-y-sistema-de-plugins" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Contratos <code>BridgeAdapter</code>, <code>Policy</code>, <code>AlgorithmBackend</code>, <code>EnvironmentSpec</code>.</li>
+<li><code>Registry</code> genérico (registro por nombre), con carga de plugins in-process (entry points,
+  carpeta de plugins) y out-of-process (protocolo JSON-RPC por líneas, cualquier lenguaje).</li>
+</ul>
+<h3 id="fase-1-esqueleto-del-repositorio">Fase 1 — Esqueleto del repositorio<a class="headerlink" href="#fase-1-esqueleto-del-repositorio" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Estructura del proyecto, CLI mínimo (Typer), packaging editable, lint (ruff), CI básico.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
