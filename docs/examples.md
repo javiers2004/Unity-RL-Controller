@@ -1,7 +1,7 @@
 # Ejemplos
 
-Tres proyectos completos en [`examples/`](https://github.com/javiers2004/Unity-RL-Controller/tree/master/examples),
-cada uno con su propio `urc.yaml` y README. Entre los tres cubren mapas distintos, bridges
+Cuatro proyectos completos en [`examples/`](https://github.com/javiers2004/Unity-RL-Controller/tree/master/examples),
+cada uno con su propio `urc.yaml` y README. Entre los cuatro cubren mapas distintos, bridges
 distintos (socket, subproceso, Unity) y algoritmos distintos (PPO, SAC).
 
 ## `toy_reach_target`
@@ -29,3 +29,14 @@ contra Unity de verdad. Necesita Unity Hub + el proyecto de ejemplo de ML-Agents
 (instrucciones en el README del ejemplo).
 
 [Ver README →](https://github.com/javiers2004/Unity-RL-Controller/tree/master/examples/unity_basic_ppo)
+
+## Unity ML-Agents WallJump + PPO
+
+Un segundo ejemplo con Unity real, con más movimiento: la escena oficial `WallJump` (el agente
+salta para superar un muro), acciones `MultiDiscrete`, tres sensores de observación concatenados
+en uno. Se usó también para verificar el
+[vídeo automático del progreso de entrenamiento](https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/unity_basic_ppo/README.md#vídeo-automático-del-progreso-de-entrenamiento)
+contra un entorno más exigente que Basic. Necesita algo más de preparación que Basic (instrucciones
+en el README del ejemplo).
+
+[Ver README →](https://github.com/javiers2004/Unity-RL-Controller/tree/master/examples/walljump_ppo)

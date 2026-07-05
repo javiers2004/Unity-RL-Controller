@@ -27,6 +27,9 @@ class RecordingControlChannel(SideChannel):
     def start_recording(self, output_dir: str) -> None:
         self._send(f"start_recording|{output_dir}")
 
+    def stop_recording(self) -> None:
+        self._send("stop_recording|")
+
     def set_time_scale(self, scale: float) -> None:
         self._send(f"time_scale|{scale}")
 

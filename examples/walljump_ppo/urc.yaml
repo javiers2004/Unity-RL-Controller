@@ -1,0 +1,9 @@
+bridge: mlagents
+bridge_options: {}   # {} = conectar al editor abierto (Play), igual que unity_basic_ppo
+algo: sb3-ppo        # WallJump tiene acciones MultiDiscrete: PPO vale, SAC no (solo continuas)
+training:
+  max_steps: 500000
+recording:
+  enabled: true
+  fast_forward_speed: 50
+  final_episodes: 3

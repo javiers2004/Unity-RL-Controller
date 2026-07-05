@@ -75,6 +75,10 @@ video = [
     # falta que el usuario lo instale a mano para ensamblar el vídeo de
     # progreso de RecordingCallback.
     "imageio[ffmpeg]>=2.31",
+    # Pillow>=10.1 por ImageFont.load_default(size=...) (parámetro de tamaño,
+    # no existe en versiones anteriores) — usado para quemar la etiqueta de
+    # paso de entrenamiento en cada fotograma del vídeo.
+    "pillow>=10.1",
 ]
 docs = [
     "mkdocs>=1.5",

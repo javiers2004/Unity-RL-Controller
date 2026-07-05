@@ -37,6 +37,7 @@ namespace Urc
             private const string ChannelGuid = "56274aad-fd18-43e7-8da5-f045b8ccea95";
 
             public event Action<string> OnStartRecording;
+            public event Action OnStopRecording;
             public event Action<float> OnSetTimeScale;
 
             public Channel()
@@ -57,6 +58,9 @@ namespace Urc
                 {
                     case "start_recording":
                         OnStartRecording?.Invoke(parts[1]);
+                        break;
+                    case "stop_recording":
+                        OnStopRecording?.Invoke();
                         break;
                     case "time_scale":
                         // Cultura invariante a propósito: Python siempre manda "." como
@@ -93,6 +97,7 @@ namespace Urc
         {
             _channel = new Channel();
             _channel.OnStartRecording += HandleStartRecording;
+            _channel.OnStopRecording += HandleStopRecording;
             _channel.OnSetTimeScale += HandleSetTimeScale;
             SideChannelManager.RegisterSideChannel(_channel);
             StartCoroutine(CaptureLoop());
@@ -111,6 +116,7 @@ namespace Urc
             }
             SideChannelManager.UnregisterSideChannel(_channel);
             _channel.OnStartRecording -= HandleStartRecording;
+            _channel.OnStopRecording -= HandleStopRecording;
             _channel.OnSetTimeScale -= HandleSetTimeScale;
             _channel = null;
         }
@@ -120,6 +126,16 @@ namespace Urc
             s_OutputDir = outputDir;
             s_FrameCounter = 0;
             Directory.CreateDirectory(s_OutputDir);
+        }
+
+        private void HandleStopRecording()
+        {
+            // Sin esto, la corrutina de captura (bucle infinito) sigue
+            // intentando escribir en s_OutputDir indefinidamente, aunque
+            // Python ya haya terminado y borrado esa carpeta al ensamblar el
+            // vídeo — verificado contra Unity real (WallJump):
+            // DirectoryNotFoundException en bucle tras el borrado.
+            s_OutputDir = null;
         }
 
         private void HandleSetTimeScale(float scale)
@@ -157,7 +173,21 @@ namespace Urc
             s_CaptureTexture.Apply();
 
             var path = Path.Combine(s_OutputDir, $"frame_{s_FrameCounter:D6}.png");
-            File.WriteAllBytes(path, s_CaptureTexture.EncodeToPNG());
+            try
+            {
+                File.WriteAllBytes(path, s_CaptureTexture.EncodeToPNG());
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // El mensaje "stop_recording" de Python se envía en el siguiente
+                // intercambio del comunicador, que puede no llegar antes de que
+                // Python ya haya ensamblado el vídeo y borrado esta carpeta —
+                // condición de carrera real, verificada contra Unity (WallJump).
+                // Se ignora en vez de dejar una excepción sin capturar: para
+                // entonces el vídeo ya está guardado, este fotograma ya no sirve.
+                s_OutputDir = null;
+                return;
+            }
             s_FrameCounter++;
         }
     }

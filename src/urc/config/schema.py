@@ -35,10 +35,34 @@ class RecordingConfig(BaseModel):
     enabled: bool = False
     # Velocidad de Time.timeScale durante la mayor parte del entrenamiento.
     fast_forward_speed: float = 20.0
-    # Cada cuántos pasos se intercala un episodio a velocidad normal (1.0).
-    normal_speed_every_n_steps: int = 1000
-    # Episodios a velocidad normal al terminar, con la política ya entrenada.
+    # Cada cuántos pasos se intercala un episodio a velocidad reducida
+    # (normal_time_scale) — más bajo = más "épocas" distintas visibles en el
+    # vídeo.
+    normal_speed_every_n_steps: int = 500
+    # Time.timeScale de esas ventanas periódicas. Por debajo de 1 a propósito
+    # (4 veces más lento que "normal"): igual que en los episodios finales,
+    # a timeScale=1 apenas da tiempo a capturar el movimiento completo de un
+    # episodio corto.
+    normal_time_scale: float = 0.25
+    # Además de las ventanas periódicas de arriba, cada vez que la recompensa
+    # media de los últimos `stabilization_window` episodios marca un nuevo
+    # máximo (y han pasado al menos `min_episodes_between_breakthroughs`
+    # episodios desde la última vez), se graba OTRA ventana a la velocidad más
+    # lenta (final_time_scale) — para ver el momento exacto de cada mejora
+    # real, no solo verla en el resultado final.
+    stabilization_window: int = 5
+    min_episodes_between_breakthroughs: int = 10
+    # Episodios al terminar, con la política ya entrenada.
     final_episodes: int = 4
+    # Time.timeScale de esos episodios finales. Muy por debajo de 1 a
+    # propósito: la captura va a un ritmo real fijo (ver `fps`/
+    # CaptureIntervalSeconds), y los episodios de ejemplo suelen ser cortos
+    # (Basic se resuelve en ~7 pasos, <1s real a timeScale=1) — a esa
+    # velocidad apenas da tiempo a capturar 1-2 fotogramas del acercamiento y
+    # se ve como un teletransporte en vez de un movimiento. A 0.05, un
+    # episodio de 7 pasos ocupa ~2.8s reales, dando varios fotogramas por
+    # paso simulado.
+    final_time_scale: float = 0.05
     # Debe coincidir con CaptureIntervalSeconds en UrcVideoRecorder.cs (0.1s =
     # 10 fps): ScreenCapture.CaptureScreenshot solo admite una captura "en
     # vuelo" a la vez, así que Unity captura a un ritmo real fijo de 10 fps,

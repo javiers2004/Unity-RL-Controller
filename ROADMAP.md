@@ -233,10 +233,21 @@ unity-rl-controller/
       intercambiable con distintos transportes (stdio, socket, y el gRPC interno de ML-Agents)
 
 **Limitación conocida y deliberada de `MLAgentsBridge`**: solo soporta un behavior con un único
-agente activo y un único sensor de observación (el caso de los entornos de ejemplo simples de
-ML-Agents, como Basic o GridWorld). Si el entorno tiene más de un agente/behavior/sensor activo,
-lanza `NotImplementedError` con un mensaje explícito en vez de comportarse de forma incorrecta en
-silencio. Multi-agente queda para cuando el contrato lo necesite explícitamente.
+agente activo (el caso de los entornos de ejemplo simples de ML-Agents, como Basic o GridWorld).
+Si el entorno tiene más de un agente/behavior activo, lanza `NotImplementedError` con un mensaje
+explícito en vez de comportarse de forma incorrecta en silencio. Multi-agente queda para cuando el
+contrato lo necesite explícitamente.
+
+**Ampliación (2026-07-05): múltiples sensores de observación.** La limitación original también
+incluía "un único sensor de observación", pero se levantó al verificar el bridge contra WallJump
+(escena real de ML-Agents con salto + detección de obstáculos por raycast, ver Fase 8/11 para el
+resto de gotchas de esa verificación): su agente expone 3 sensores separados (`observation_specs`
+de tamaños `(210,), (210,), (24,)` — vector base más dos `RayPerceptionSensor`), y el bridge
+lanzaba `NotImplementedError` con solo uno soportado. Ahora `observation_spec()`/`reset()`/`step()`
+concatenan todos los sensores en un único vector plano (`MLAgentsBridge._flatten_observation`).
+Esto es correcto porque `urc` solo entrena con `MlpPolicy` (nunca CNN sobre observaciones
+visuales) — para eso sí importaría preservar la estructura por sensor, pero es un caso que no está
+en el alcance actual del proyecto.
 
 **Gotcha real encontrado #1**: `mlagents-envs` 0.28.0 (la última en PyPI) trae bindings de
 protobuf generados con una versión antigua; con `protobuf>=3.21` falla al importar. Se fija
@@ -504,6 +515,42 @@ ciegas):
 Ejemplo end-to-end documentado en
 [`examples/unity_basic_ppo/README.md`](https://github.com/javiers2004/Unity-RL-Controller/blob/master/examples/unity_basic_ppo/README.md#vídeo-automático-del-progreso-de-entrenamiento).
 
+**Ampliaciones posteriores (2026-07-05), todas verificadas contra Unity real**:
+- **Cámara súper lenta de verdad en los episodios finales** (`final_time_scale`, por defecto
+  `0.05`, no solo `1.0`): con episodios cortos (Basic se resuelve en ~7 pasos), a velocidad normal
+  el acercamiento al objetivo apenas ocupa tiempo real y se ve como un teletransporte en vez de un
+  movimiento — a `0.05` el mismo episodio ocupa ~20x más tiempo real, dando muchos más fotogramas
+  del mismo recorrido.
+- **Etiqueta de paso quemada en cada fotograma** (`RecordingCallback._label_for_frame`): se guarda
+  una línea temporal `(tiempo real, num_timesteps)` durante el entrenamiento y, al ensamblar el
+  vídeo, se interpola el paso correspondiente a la fecha de modificación de cada PNG, dibujado con
+  `PIL.ImageDraw` sobre una caja negra en la esquina inferior izquierda ("Paso 12.345" o "Modelo
+  final"). **Gotcha real**: `PIL.ImageFont.load_default()` no soporta acentos — "Política final"
+  salía con un cuadrado en vez de la "í" — arreglado quitando el acento ("Modelo final").
+- **Ventanas periódicas más lentas y más frecuentes**: `normal_speed_every_n_steps` bajado de 1000
+  a 500 (más "épocas" visibles), y esas ventanas ahora usan `normal_time_scale=0.25` (4x más lento
+  que antes) en vez de velocidad `1.0`, por la misma razón que la cámara lenta final.
+- **Detección automática de mejoras reales** (`stabilization_window`/
+  `min_episodes_between_breakthroughs`): además de las ventanas periódicas por paso, cada vez que
+  la recompensa media de los últimos `stabilization_window` episodios marca un nuevo máximo (y han
+  pasado al menos `min_episodes_between_breakthroughs` episodios desde la última vez), se graba
+  otra ventana a la velocidad más lenta (`final_time_scale`) — para ver el momento exacto de cada
+  mejora real durante el entrenamiento, no solo el resultado final. Verificado con una traza
+  calculada a mano contra la implementación real antes de fijar las aserciones del test.
+- **Gotcha real — condición de carrera al terminar**: `UrcVideoRecorder`'s captura es una corrutina
+  en bucle infinito; sin avisarle explícitamente, seguía intentando escribir en `video_frames/`
+  después de que `RecordingCallback` ya hubiera ensamblado el vídeo y borrado esa carpeta, causando
+  un `DirectoryNotFoundException` sin capturar en Unity (verificado contra WallJump, ver más abajo).
+  Arreglado en dos frentes: (1) nuevo mensaje `stop_recording` enviado antes de tocar la carpeta de
+  fotogramas, y (2) por si ese mensaje no llega a tiempo (se envía en el siguiente intercambio del
+  comunicador, no al instante), un `try/catch` alrededor de la escritura en Unity que ignora
+  `DirectoryNotFoundException` en vez de dejarla sin capturar.
+
+**Verificado contra un segundo entorno real, más complejo: WallJump** (escena oficial de
+ML-Agents, salto para superar un muro) — ver Fase 11 para el detalle completo de los gotchas de
+esa verificación (multi-behavior dinámico, 24 áreas paralelas por defecto, sensores múltiples).
+10.240 pasos entrenados de verdad, vídeo de **1.253 fotogramas / 125 s** generado sin errores.
+
 **Verificado manualmente de extremo a extremo** (2026-07-04): entrené un checkpoint diminuto contra
 un servidor `socket` de juguete, corrí `urc eval` sobre él sin pasarle ninguna config (usó
 `run_info.json` solo), comprobé el JSON de resultado guardado, corrí `urc compare` con la ruta del
@@ -611,7 +658,7 @@ solo para el smoke test contra Unity, no como comando genérico).
       resultante en un venv limpio con `urc version`/`urc config show` funcionando. **No publicado
       a PyPI** — decisión explícita del usuario: dejar el paquete listo, publicar el "de verdad"
       es un paso suyo (necesita su propia cuenta/API key de PyPI).
-- [x] 3 ejemplos end-to-end en `examples/`, cubriendo bridges/algoritmos/mapas distintos:
+- [x] 4 ejemplos end-to-end en `examples/`, cubriendo bridges/algoritmos/mapas distintos:
   - `toy_reach_target/`: entorno de juguete autocontenido (socket TCP, sin Unity), PPO —
     **verificado aprendiendo la tarea de verdad** (100% de éxito, 8 pasos por episodio, el óptimo).
   - `csharp_bridge/`: el bridge de referencia en C# de la Fase 10, ahora con `urc.yaml` propio,
@@ -622,6 +669,33 @@ solo para el smoke test contra Unity, no como comando genérico).
     19.9 a 7.0 pasos y recompensa media subiendo de 0.67 a 0.93 a lo largo del entrenamiento;
     `urc eval --episodes 20` sobre el checkpoint final confirmó **0.930 ± 0.000 de recompensa
     media, 7.0 pasos de duración** — convergencia real y consistente, no ruido.
+  - `walljump_ppo/`: escena oficial **WallJump** de ML-Agents (agente que salta para superar un
+    muro), PPO con acciones `MultiDiscrete` — elegida para probar el vídeo automático contra un
+    entorno con más movimiento que Basic (ver Fase 8). **Verificado end-to-end** (2026-07-05):
+    10.240 pasos, duración media de episodio bajando de 89.8 a 53.9 pasos; vídeo de progreso de
+    1.253 fotogramas generado sin errores.
+
+  **Tres gotchas reales encontrados preparando WallJump** (ninguno es un bug de `urc` en sí, salvo
+  el tercero):
+  1. **Comportamiento dinámico según la dificultad**: `WallJumpAgent.cs` elige aleatoriamente cada
+     episodio entre "sin muro"/"muro pequeño" (comportamiento `SmallWallJump`) y "muro alto + bloque
+     que empujar" (comportamiento `BigWallJump`) — con el tiempo suficiente, ambos acaban
+     registrándose, y `MLAgentsBridge` solo soporta un behavior por entorno (limitación deliberada,
+     Fase 3). Arreglado en el propio script (copia local del usuario, no en el repo de `urc`):
+     limitar `Random.Range(0, 5)` a `Random.Range(0, 2)` en `Initialize()`/`OnEpisodeBegin()`, para
+     que nunca elija la variante de muro alto.
+  2. **24 áreas de entrenamiento en paralelo por defecto**: como casi todos los ejemplos oficiales
+     de ML-Agents, la escena viene preparada para `mlagents-learn` (entrenamiento masivo en
+     paralelo), con 24 copias de `WallJumpArea` — `MLAgentsBridge` solo soporta un agente activo.
+     Desactivar los GameObjects duplicados en el Editor **no bastaba** (un script de diagnóstico
+     independiente, conectando directo con `mlagents_envs.UnityEnvironment` y leyendo
+     `decision_steps.agent_id`, siguió reportando 24 IDs de agente tras "desactivar" 23 áreas —
+     causa exacta sin determinar, posiblemente relacionada con cómo Unity/ML-Agents inicializa
+     agentes ya cacheados). **Solución que sí funcionó**: borrar las 23 áreas de más en vez de
+     desactivarlas.
+  3. **Múltiples sensores de observación**: ver la ampliación de `MLAgentsBridge` en la Fase 3 —
+     este fue el hallazgo que llevó a soportar varios sensores concatenados en el bridge en sí, no
+     un parche puntual para este ejemplo.
 
 **Bug real encontrado montando el ejemplo de C#**: `subprocess.Popen` con una ruta relativa que
 contiene separadores de carpeta fallaba con `FileNotFoundError` en esta instalación de Python de

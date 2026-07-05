@@ -47,13 +47,15 @@ class FakeUnityEnvironment:
         self,
         *,
         observation_shape: tuple[int, ...] = (2,),
+        observation_shapes: list[tuple[int, ...]] | None = None,
         continuous_size: int = 1,
         discrete_branches: tuple[int, ...] = (),
         num_agents: int = 1,
         **_: object,
     ) -> None:
+        shapes = observation_shapes if observation_shapes is not None else [observation_shape]
         self._behavior_spec = SimpleNamespace(
-            observation_specs=[FakeObservationSpec(observation_shape)],
+            observation_specs=[FakeObservationSpec(shape) for shape in shapes],
             action_spec=FakeActionSpec(continuous_size, discrete_branches),
         )
         self._num_agents = num_agents
@@ -64,12 +66,15 @@ class FakeUnityEnvironment:
         self.last_action = None
         self.closed = False
 
+    def _sensor_shapes(self) -> list[tuple[int, ...]]:
+        return [spec.shape for spec in self._behavior_spec.observation_specs]
+
     def reset(self) -> None:
         self.behavior_specs = {BEHAVIOR_NAME: self._behavior_spec}
         self._episode_step = 0
-        shape = self._behavior_spec.observation_specs[0].shape
+        obs = [np.zeros(shape) for shape in self._sensor_shapes()]
         self._decision_steps = {
-            i: SimpleNamespace(obs=[np.zeros(shape)], reward=0.0) for i in range(self._num_agents)
+            i: SimpleNamespace(obs=obs, reward=0.0) for i in range(self._num_agents)
         }
         self._terminal_steps = {}
 
@@ -79,13 +84,14 @@ class FakeUnityEnvironment:
 
     def step(self) -> None:
         self._episode_step += 1
-        shape = self._behavior_spec.observation_specs[0].shape
-        obs = np.full(shape, self._episode_step, dtype=np.float32)
+        obs = [
+            np.full(shape, self._episode_step, dtype=np.float32) for shape in self._sensor_shapes()
+        ]
         if self._episode_step >= 2:
             self._decision_steps = {}
-            self._terminal_steps = {0: SimpleNamespace(obs=[obs], reward=5.0)}
+            self._terminal_steps = {0: SimpleNamespace(obs=obs, reward=5.0)}
         else:
-            self._decision_steps = {0: SimpleNamespace(obs=[obs], reward=1.0)}
+            self._decision_steps = {0: SimpleNamespace(obs=obs, reward=1.0)}
             self._terminal_steps = {}
 
     def get_steps(self, behavior_name: str):
@@ -191,3 +197,26 @@ def test_multiple_active_agents_raise_not_implemented(monkeypatch: pytest.Monkey
         created.reset()
 
     created.close()
+
+
+def test_multiple_observation_sensors_are_flattened_and_concatenated(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """WallJump (verificado contra Unity real) expone un vector base más
+    sensores de raycast aparte — antes esto lanzaba NotImplementedError."""
+    monkeypatch.setattr(
+        "urc.bridges.mlagents_bridge.UnityEnvironment",
+        functools.partial(FakeUnityEnvironment, observation_shapes=[(2,), (3,), (1,)]),
+    )
+    created = MLAgentsBridge()
+    try:
+        obs = created.reset()
+        assert created.observation_spec().shape == (6,)  # 2 + 3 + 1
+
+        assert obs.shape == (6,)
+        assert list(obs) == [0.0] * 6
+
+        result = created.step(action=[0.5])
+        assert list(result.observation) == [1.0] * 6
+    finally:
+        created.close()

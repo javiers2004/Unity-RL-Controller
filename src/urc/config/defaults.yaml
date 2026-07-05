@@ -21,8 +21,12 @@ logging:
 recording:
   enabled: false
   fast_forward_speed: 20.0
-  normal_speed_every_n_steps: 1000
+  normal_speed_every_n_steps: 500
+  normal_time_scale: 0.25
+  stabilization_window: 5
+  min_episodes_between_breakthroughs: 10
   final_episodes: 4
+  final_time_scale: 0.05
   fps: 10
   keep_frames: false
 output_dir: runs

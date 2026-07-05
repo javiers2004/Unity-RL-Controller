@@ -21,6 +21,17 @@ publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).
   constantemente; arreglado con campos `static` que sobreviven a la recarga. Detalle completo en
   `ROADMAP.md`, Fase 8.
 - Documentado en `examples/unity_basic_ppo/README.md`.
+- Ampliado (2026-07-05): cámara súper lenta de verdad en los episodios finales
+  (`final_time_scale`), etiqueta de paso quemada en cada fotograma, ventanas periódicas más lentas
+  y frecuentes (`normal_time_scale`, `normal_speed_every_n_steps` más bajo), detección automática
+  de mejoras reales de recompensa (`stabilization_window`/`min_episodes_between_breakthroughs`) que
+  graba otra ventana lenta en el momento exacto de cada avance, y arreglo de una condición de
+  carrera real al terminar (`stop_recording` + `try/catch` en Unity — sin esto, la captura seguía
+  escribiendo en la carpeta de fotogramas después de que Python ya la hubiera borrado).
+- `MLAgentsBridge`: soporte para múltiples sensores de observación (se concatenan en un único
+  vector) — encontrado y arreglado verificando el vídeo contra un segundo entorno real más
+  complejo, `examples/walljump_ppo/` (escena WallJump de ML-Agents, PPO con acciones
+  `MultiDiscrete`), verificado end-to-end (10.240 pasos, vídeo de 1.253 fotogramas).
 
 ### Fase 12 — Pulido final y comunidad
 - README: badges reales (CI, Unity integration, Docs, licencia, versión de Python) y una sección

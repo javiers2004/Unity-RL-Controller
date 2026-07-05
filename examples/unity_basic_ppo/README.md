@@ -70,10 +70,13 @@ urc train --set recording.enabled=true --set recording.fast_forward_speed=50
 
 Al terminar, el vídeo queda en `runs/default/video/training_progress.mp4`. Opciones disponibles
 (`urc config show --set recording.<opción>=...`): `fast_forward_speed` (por defecto 20),
-`normal_speed_every_n_steps` (1000), `final_episodes` (4), `fps` (10 — debe coincidir con
-`CaptureIntervalSeconds` en `UrcVideoRecorder.cs`, ver comentario ahí si cambias uno de los dos) y
-`keep_frames` (false — si es `true`, conserva también los PNG sueltos en `video_frames/`, útil
-solo para depurar).
+`normal_speed_every_n_steps` (1000), `final_episodes` (4), `final_time_scale` (0.25 — cámara lenta
+de verdad para los episodios finales, no solo velocidad normal: como esos episodios duran poco
+tiempo real, a `timeScale=1` apenas da tiempo a capturar un par de fotogramas del acercamiento y se
+ve como un teletransporte en vez de un movimiento; más lento = más fotogramas del mismo
+recorrido), `fps` (10 — debe coincidir con `CaptureIntervalSeconds` en `UrcVideoRecorder.cs`, ver
+comentario ahí si cambias uno de los dos) y `keep_frames` (false — si es `true`, conserva también
+los PNG sueltos en `video_frames/`, útil solo para depurar).
 
 Solo funciona con el bridge `mlagents`: `BridgeAdapter` no expone el renderizado de Unity a
 propósito (ver ROADMAP, Fase 8), así que capturar píxeles solo es posible desde dentro de la
