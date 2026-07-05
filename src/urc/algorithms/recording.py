@@ -53,8 +53,9 @@ class RecordingCallback(BaseCallback):
         self._final_time_scale = float(config.get("final_time_scale", 0.05))
         self._stabilization_window = int(config.get("stabilization_window", 5))
         self._min_episodes_between_breakthroughs = int(
-            config.get("min_episodes_between_breakthroughs", 10)
+            config.get("min_episodes_between_breakthroughs", 20)
         )
+        self._max_breakthroughs = int(config.get("max_breakthroughs", 5))
         self._fps = int(config.get("fps", 30))
         self._keep_frames = bool(config.get("keep_frames", False))
         # Absolutas a propósito: esta ruta se le manda tal cual a Unity (proceso
@@ -77,6 +78,7 @@ class RecordingCallback(BaseCallback):
         self._episode_rewards: list[float] = []
         self._best_avg_reward = float("-inf")
         self._episodes_since_last_breakthrough = 0
+        self._breakthrough_count = 0
         # (tiempo real, num_timesteps) para poder etiquetar cada fotograma del
         # vídeo con el paso al que corresponde, a partir de la fecha de
         # modificación del PNG — ver _label_for_frame.
@@ -130,12 +132,20 @@ class RecordingCallback(BaseCallback):
 
     def _detected_breakthrough(self) -> bool:
         """Se dispara cuando la recompensa media de los últimos
-        `stabilization_window` episodios marca un nuevo máximo, y han pasado
-        al menos `min_episodes_between_breakthroughs` episodios desde la
-        última vez — así se ve el momento de cada mejora real, sin repetir un
-        clip lento por cada episodio mientras el agente todavía va mejorando.
+        `stabilization_window` episodios marca un nuevo máximo, han pasado al
+        menos `min_episodes_between_breakthroughs` episodios desde la última
+        vez, y no se ha alcanzado ya `max_breakthroughs` en este entrenamiento.
+
+        El tope máximo es necesario de verdad, no defensivo: en tareas que
+        convergen rápido (verificado con Basic) la recompensa marca un nuevo
+        máximo tan a menudo que, sin límite, la cámara lenta de cada
+        "mejora" acababa dominando casi todo el vídeo en vez de ser un
+        momento puntual — 4.017 fotogramas para solo 6.144 pasos entrenados,
+        con más de mil fotogramas cubriendo un puñado de pasos.
         """
         self._episodes_since_last_breakthrough += 1
+        if self._breakthrough_count >= self._max_breakthroughs:
+            return False
         if len(self._episode_rewards) < self._stabilization_window:
             return False
         if self._episodes_since_last_breakthrough < self._min_episodes_between_breakthroughs:
@@ -146,6 +156,7 @@ class RecordingCallback(BaseCallback):
             return False
         self._best_avg_reward = avg
         self._episodes_since_last_breakthrough = 0
+        self._breakthrough_count += 1
         return True
 
     def _on_training_end(self) -> None:

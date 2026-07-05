@@ -531,12 +531,24 @@ Ejemplo end-to-end documentado en
   a 500 (más "épocas" visibles), y esas ventanas ahora usan `normal_time_scale=0.25` (4x más lento
   que antes) en vez de velocidad `1.0`, por la misma razón que la cámara lenta final.
 - **Detección automática de mejoras reales** (`stabilization_window`/
-  `min_episodes_between_breakthroughs`): además de las ventanas periódicas por paso, cada vez que
-  la recompensa media de los últimos `stabilization_window` episodios marca un nuevo máximo (y han
-  pasado al menos `min_episodes_between_breakthroughs` episodios desde la última vez), se graba
-  otra ventana a la velocidad más lenta (`final_time_scale`) — para ver el momento exacto de cada
-  mejora real durante el entrenamiento, no solo el resultado final. Verificado con una traza
-  calculada a mano contra la implementación real antes de fijar las aserciones del test.
+  `min_episodes_between_breakthroughs`/`max_breakthroughs`): además de las ventanas periódicas por
+  paso, cada vez que la recompensa media de los últimos `stabilization_window` episodios marca un
+  nuevo máximo (y han pasado al menos `min_episodes_between_breakthroughs` episodios desde la
+  última vez, sin superar `max_breakthroughs` en total), se graba otra ventana a la velocidad más
+  lenta (`final_time_scale`) — para ver el momento exacto de cada mejora real durante el
+  entrenamiento, no solo el resultado final. Verificado con una traza calculada a mano contra la
+  implementación real antes de fijar las aserciones del test.
+
+  **Gotcha real encontrado al usarlo de verdad (2026-07-05): sin tope, la cámara lenta domina el
+  vídeo en tareas que convergen rápido.** Con los valores iniciales (`min_episodes_between_breakthroughs=10`,
+  sin límite de repeticiones), una tanda de 5.000 pasos contra Basic (que aprende muy deprisa)
+  produjo un vídeo de **4.017 fotogramas para solo 6.144 pasos entrenados** — verificado extrayendo
+  fotogramas de muestra y leyendo la etiqueta quemada: entre el fotograma 200 (Paso 411) y el 1807
+  (Paso 492), un 40% del vídeo, el entrenamiento solo avanzó 81 pasos, porque la recompensa de
+  Basic mejora tan a menudo al principio que casi cada ventana de comprobación contaba como una
+  "mejora nueva". Arreglado con `max_breakthroughs` (por defecto 5, tope duro sobre el total de
+  repeticiones lentas por entrenamiento) y subiendo `min_episodes_between_breakthroughs` de 10 a 20
+  por defecto.
 - **Gotcha real — condición de carrera al terminar**: `UrcVideoRecorder`'s captura es una corrutina
   en bucle infinito; sin avisarle explícitamente, seguía intentando escribir en `video_frames/`
   después de que `RecordingCallback` ya hubiera ensamblado el vídeo y borrado esa carpeta, causando

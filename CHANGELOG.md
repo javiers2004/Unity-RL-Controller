@@ -32,6 +32,10 @@ publicado a PyPI todavía (ver la Fase 11 sobre el estado de la publicación).
   vector) — encontrado y arreglado verificando el vídeo contra un segundo entorno real más
   complejo, `examples/walljump_ppo/` (escena WallJump de ML-Agents, PPO con acciones
   `MultiDiscrete`), verificado end-to-end (10.240 pasos, vídeo de 1.253 fotogramas).
+- Fix: sin `max_breakthroughs` (nuevo, por defecto 5), en tareas que convergen rápido (Basic) la
+  detección de mejoras se disparaba tan a menudo que la cámara lenta dominaba casi todo el vídeo —
+  verificado: 4.017 fotogramas para solo 6.144 pasos entrenados. `min_episodes_between_breakthroughs`
+  también subido de 10 a 20 por defecto.
 
 ### Fase 12 — Pulido final y comunidad
 - README: badges reales (CI, Unity integration, Docs, licencia, versión de Python) y una sección

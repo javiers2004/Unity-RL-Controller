@@ -69,14 +69,26 @@ urc train --set recording.enabled=true --set recording.fast_forward_speed=50
 ```
 
 Al terminar, el vídeo queda en `runs/default/video/training_progress.mp4`. Opciones disponibles
-(`urc config show --set recording.<opción>=...`): `fast_forward_speed` (por defecto 20),
-`normal_speed_every_n_steps` (1000), `final_episodes` (4), `final_time_scale` (0.25 — cámara lenta
-de verdad para los episodios finales, no solo velocidad normal: como esos episodios duran poco
-tiempo real, a `timeScale=1` apenas da tiempo a capturar un par de fotogramas del acercamiento y se
-ve como un teletransporte en vez de un movimiento; más lento = más fotogramas del mismo
-recorrido), `fps` (10 — debe coincidir con `CaptureIntervalSeconds` en `UrcVideoRecorder.cs`, ver
-comentario ahí si cambias uno de los dos) y `keep_frames` (false — si es `true`, conserva también
-los PNG sueltos en `video_frames/`, útil solo para depurar).
+(`urc config show --set recording.<opción>=...`):
+
+- `fast_forward_speed` (20): `Time.timeScale` durante la mayor parte del entrenamiento.
+- `normal_speed_every_n_steps` (500) / `normal_time_scale` (0.25): cada cuántos pasos se intercala
+  una ventana más lenta (no `1.0`: los episodios de ejemplo suelen ser cortos, y a velocidad
+  totalmente normal apenas da tiempo a capturar el movimiento completo).
+- `stabilization_window` (5) / `min_episodes_between_breakthroughs` (20) / `max_breakthroughs`
+  (5): además de las ventanas periódicas, cuando la recompensa media de los últimos
+  `stabilization_window` episodios marca un nuevo máximo se graba otra ventana a la velocidad más
+  lenta (`final_time_scale`) — con el tope de **`max_breakthroughs` en total**, necesario de
+  verdad: en tareas que convergen rápido (verificado con Basic) la recompensa mejora tan a menudo
+  que, sin tope, la cámara lenta acababa dominando casi todo el vídeo (4.017 fotogramas para solo
+  6.144 pasos entrenados, con más de mil fotogramas cubriendo un puñado de pasos).
+- `final_episodes` (4) / `final_time_scale` (0.05): episodios al terminar, a cámara muy lenta de
+  verdad (no solo velocidad normal) para que se aprecie el movimiento completo del agente ya
+  entrenado en vez de un teletransporte.
+- `fps` (10): debe coincidir con `CaptureIntervalSeconds` en `UrcVideoRecorder.cs` — ver el
+  comentario ahí si cambias uno de los dos.
+- `keep_frames` (false): si es `true`, conserva también los PNG sueltos en `video_frames/`, útil
+  solo para depurar.
 
 Solo funciona con el bridge `mlagents`: `BridgeAdapter` no expone el renderizado de Unity a
 propósito (ver ROADMAP, Fase 8), así que capturar píxeles solo es posible desde dentro de la

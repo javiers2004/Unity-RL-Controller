@@ -47,11 +47,16 @@ class RecordingConfig(BaseModel):
     # Además de las ventanas periódicas de arriba, cada vez que la recompensa
     # media de los últimos `stabilization_window` episodios marca un nuevo
     # máximo (y han pasado al menos `min_episodes_between_breakthroughs`
-    # episodios desde la última vez), se graba OTRA ventana a la velocidad más
-    # lenta (final_time_scale) — para ver el momento exacto de cada mejora
-    # real, no solo verla en el resultado final.
+    # episodios desde la última vez, sin superar `max_breakthroughs` en total),
+    # se graba OTRA ventana a la velocidad más lenta (final_time_scale) — para
+    # ver el momento exacto de cada mejora real, no solo el resultado final.
+    # `max_breakthroughs` es necesario de verdad, no defensivo: en tareas que
+    # convergen rápido (verificado con Basic) la recompensa marca un nuevo
+    # máximo tan a menudo que, sin tope, la cámara lenta acababa dominando casi
+    # todo el vídeo (4.017 fotogramas para solo 6.144 pasos entrenados).
     stabilization_window: int = 5
-    min_episodes_between_breakthroughs: int = 10
+    min_episodes_between_breakthroughs: int = 20
+    max_breakthroughs: int = 5
     # Episodios al terminar, con la política ya entrenada.
     final_episodes: int = 4
     # Time.timeScale de esos episodios finales. Muy por debajo de 1 a

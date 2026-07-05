@@ -157,6 +157,36 @@ def test_records_breakthrough_on_first_stable_window_and_on_further_improvement(
     assert bridge.time_scale_calls == [50.0, 0.05, 50.0, 0.05]
 
 
+def test_max_breakthroughs_caps_slow_motion_even_if_reward_keeps_improving(tmp_path):
+    """Sin este tope, en tareas que convergen rápido (Basic, verificado contra
+    Unity real) la recompensa marca un nuevo máximo tan a menudo que la cámara
+    lenta domina casi todo el vídeo — ver ROADMAP, Fase 8, 2026-07-05."""
+    bridge = RecordingBridge()
+    callback = _make_callback(
+        bridge,
+        tmp_path,
+        fast_forward_speed=50.0,
+        stabilization_window=1,
+        min_episodes_between_breakthroughs=1,
+        max_breakthroughs=1,
+    )
+    callback._on_training_start()
+
+    def end_episode(reward: float) -> None:
+        callback.locals = {"rewards": [reward], "dones": [True]}
+        callback._on_step()
+
+    end_episode(1.0)  # primer episodio: dispara el único breakthrough permitido
+    assert bridge.time_scale_calls == [50.0, 0.05]
+    end_episode(1.0)  # cierra la ventana lenta
+    assert bridge.time_scale_calls == [50.0, 0.05, 50.0]
+
+    end_episode(10.0)  # nuevo máximo claro, pero ya se alcanzó max_breakthroughs=1
+    assert bridge.time_scale_calls == [50.0, 0.05, 50.0]
+    end_episode(20.0)  # otro nuevo máximo: tampoco dispara
+    assert bridge.time_scale_calls == [50.0, 0.05, 50.0]
+
+
 def test_on_training_end_stops_recording_before_assembling_video(tmp_path):
     """stop_recording debe llamarse antes de tocar la carpeta de fotogramas:
     sin esto, la corrutina de captura en Unity sigue escribiendo ahí después
