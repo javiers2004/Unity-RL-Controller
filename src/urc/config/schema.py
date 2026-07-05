@@ -59,15 +59,16 @@ class RecordingConfig(BaseModel):
     max_breakthroughs: int = 5
     # Episodios al terminar, con la política ya entrenada.
     final_episodes: int = 4
-    # Time.timeScale de esos episodios finales. Muy por debajo de 1 a
-    # propósito: la captura va a un ritmo real fijo (ver `fps`/
-    # CaptureIntervalSeconds), y los episodios de ejemplo suelen ser cortos
-    # (Basic se resuelve en ~7 pasos, <1s real a timeScale=1) — a esa
-    # velocidad apenas da tiempo a capturar 1-2 fotogramas del acercamiento y
-    # se ve como un teletransporte en vez de un movimiento. A 0.05, un
-    # episodio de 7 pasos ocupa ~2.8s reales, dando varios fotogramas por
-    # paso simulado.
-    final_time_scale: float = 0.05
+    # Time.timeScale de esos episodios finales. Por debajo de 1 a propósito
+    # (4 veces más lento que tiempo real, igual que `normal_time_scale`): la
+    # captura va a un ritmo real fijo (ver `fps`/CaptureIntervalSeconds), y
+    # los episodios de ejemplo suelen ser cortos (Basic se resuelve en ~7
+    # pasos, <1s real a timeScale=1) — a esa velocidad apenas da tiempo a
+    # capturar el acercamiento y se ve como un teletransporte. 0.05 (20x más
+    # lento) se probó primero pero alargaba demasiado esta fase si la
+    # política final todavía no converge del todo (episodios más largos de
+    # lo esperado) — 0.25 es un término medio razonable.
+    final_time_scale: float = 0.25
     # Debe coincidir con CaptureIntervalSeconds en UrcVideoRecorder.cs (0.1s =
     # 10 fps): ScreenCapture.CaptureScreenshot solo admite una captura "en
     # vuelo" a la vez, así que Unity captura a un ritmo real fijo de 10 fps,

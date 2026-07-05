@@ -50,13 +50,13 @@ class RecordingCallback(BaseCallback):
         self._every_n = int(config.get("normal_speed_every_n_steps", 500))
         self._normal_time_scale = float(config.get("normal_time_scale", 0.25))
         self._final_episodes = int(config.get("final_episodes", 4))
-        self._final_time_scale = float(config.get("final_time_scale", 0.05))
+        self._final_time_scale = float(config.get("final_time_scale", 0.25))
         self._stabilization_window = int(config.get("stabilization_window", 5))
         self._min_episodes_between_breakthroughs = int(
             config.get("min_episodes_between_breakthroughs", 20)
         )
         self._max_breakthroughs = int(config.get("max_breakthroughs", 5))
-        self._fps = int(config.get("fps", 30))
+        self._fps = int(config.get("fps", 10))
         self._keep_frames = bool(config.get("keep_frames", False))
         # Absolutas a propósito: esta ruta se le manda tal cual a Unity (proceso
         # aparte, posiblemente con otro directorio de trabajo) para que cree ahí

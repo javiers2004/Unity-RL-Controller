@@ -27,7 +27,7 @@ recording:
   min_episodes_between_breakthroughs: 20
   max_breakthroughs: 5
   final_episodes: 4
-  final_time_scale: 0.05
+  final_time_scale: 0.25
   fps: 10
   keep_frames: false
 output_dir: runs

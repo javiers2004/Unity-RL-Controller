@@ -82,8 +82,8 @@ Al terminar, el vídeo queda en `runs/default/video/training_progress.mp4`. Opci
   verdad: en tareas que convergen rápido (verificado con Basic) la recompensa mejora tan a menudo
   que, sin tope, la cámara lenta acababa dominando casi todo el vídeo (4.017 fotogramas para solo
   6.144 pasos entrenados, con más de mil fotogramas cubriendo un puñado de pasos).
-- `final_episodes` (4) / `final_time_scale` (0.05): episodios al terminar, a cámara muy lenta de
-  verdad (no solo velocidad normal) para que se aprecie el movimiento completo del agente ya
+- `final_episodes` (4) / `final_time_scale` (0.25, igual que `normal_time_scale`): episodios al
+  terminar, más lentos que tiempo real para que se aprecie el movimiento completo del agente ya
   entrenado en vez de un teletransporte.
 - `fps` (10): debe coincidir con `CaptureIntervalSeconds` en `UrcVideoRecorder.cs` — ver el
   comentario ahí si cambias uno de los dos.
